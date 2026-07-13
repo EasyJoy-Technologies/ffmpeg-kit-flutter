@@ -1,0 +1,8 @@
+.dart_tool/
+build/
+pubspec.lock
+ios/Frameworks/
+macos/Frameworks/
+windows/ffmpeg-kit/
+android/.gradle/
+*.iml
