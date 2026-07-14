@@ -1,3 +1,10 @@
+## 1.0.1 (EasyJoy self-hosted)
+
+* **macOS build fix:** the prebuilt macOS frameworks shipped unsigned, so embedding them into a signed `.app` failed with `code object is not signed at all` (Command CodeSign failed) — e.g. on `libavfilter.framework`.
+  * Repackaged `dist/ffmpeg-kit-macos-audio-8.1.2.zip` without AppleDouble/`._*` resource-fork junk (previously 314 stray files) while preserving framework symlinks.
+  * `scripts/setup_macos.sh` now strips any `._*`/`.DS_Store` leftovers and **ad-hoc code-signs** all 8 frameworks after unzip, so Xcode's app CodeSign step succeeds.
+* No API or source changes; iOS/Android/Windows untouched.
+
 ## 1.0.0 (EasyJoy self-hosted)
 
 * Forked from `ffmpeg_kit_flutter_new` 4.4.2 (FFmpeg 8.1.2, includes CVE-2026-8461 fix).
