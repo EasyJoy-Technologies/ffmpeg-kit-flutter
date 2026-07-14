@@ -1,3 +1,11 @@
+## 1.0.2 (EasyJoy self-hosted)
+
+* **macOS: pre-built frameworks are now committed to the repo** (`macos/Frameworks/`, pre-extracted from `dist/*.zip` and ad-hoc code-signed). Removed the `macos/Frameworks/` ignore in `.gitignore`.
+  * Fixes `'ffmpegkit/FFmpegKitConfig.h' file not found` when the plugin is consumed as a **local `:path` dependency**: CocoaPods does not run a podspec `prepare_command` for path pods, so `setup_macos.sh` never generated `Frameworks/` and the framework headers were missing. Shipping the frameworks in-repo makes both `git` and local `:path` consumption work with zero setup.
+  * The frameworks are already ad-hoc signed in-repo, so the macOS app CodeSign step still succeeds (same fix as 1.0.1, applied ahead of time).
+  * `setup_macos.sh` / podspec `prepare_command` are retained as a fallback — they only regenerate `Frameworks/` when the directory is absent, so committed frameworks take precedence.
+* No API or source changes; iOS/Android/Windows untouched.
+
 ## 1.0.1 (EasyJoy self-hosted)
 
 * **macOS build fix:** the prebuilt macOS frameworks shipped unsigned, so embedding them into a signed `.app` failed with `code object is not signed at all` (Command CodeSign failed) — e.g. on `libavfilter.framework`.
