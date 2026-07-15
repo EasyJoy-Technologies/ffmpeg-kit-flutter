@@ -26,6 +26,12 @@ Pod::Spec.new do |s|
       if [ ! -d "./Frameworks" ]; then
         chmod +x ../scripts/setup_macos.sh
         ../scripts/setup_macos.sh
+      else
+        # Frameworks are committed to the repo (min variant, shipped unsigned so a
+        # Linux CI can vendor them). Ad-hoc code-sign in place so the consuming
+        # macOS app's CodeSign step passes. Idempotent & safe to re-run.
+        chmod +x ../scripts/sign_macos_frameworks.sh
+        ../scripts/sign_macos_frameworks.sh ./Frameworks || true
       fi
     CMD
     ss.source_files         = 'Classes/**/*'

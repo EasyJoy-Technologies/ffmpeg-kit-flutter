@@ -17,7 +17,7 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        // Self-hosted FFmpeg-Kit binaries (audio variant, LGPL) bundled in this repo.
+        // Self-hosted FFmpeg-Kit binaries (min variant, LGPL) bundled in this repo.
         maven { url = uri("${projectDir}/libs/maven") }
     }
 }
@@ -54,6 +54,6 @@ android {
 
     dependencies {
         implementation("androidx.annotation:annotation:1.9.1")
-        implementation("com.antonkarpenko:ffmpeg-kit-audio:2.2.1")
+        implementation("com.antonkarpenko:ffmpeg-kit-min:2.2.1")
     }
 }

@@ -1,3 +1,12 @@
+## 1.1.0 (EasyJoy self-hosted)
+
+* **Switched variant `audio` → `min` (FFmpeg 8.1.2) to cut binary size.** The `audio` variant statically linked 10 external encoders (`lame`, `libilbc`, `libvorbis`, `opencore-amr`, `opus`, `shine`, `soxr`, `speex`, `twolame`, `vo-amrwbenc`) that consumers were not using — MP3 encoding is done in Dart, and only native AAC(m4a)/WAV/PCM encode + native decode/probe are needed. The `min` variant ships **no external libraries** while keeping all FFmpeg-native codecs, so it is strictly smaller with no loss of used functionality.
+  * iOS `libavcodec` fat framework: 30.5MB → 25MB; Android AAR: 49MB → 38.5MB (per-ABI `libavcodec.so` ~11MB → ~8MB).
+  * All 4 platforms swapped to the min prebuilt binaries (iOS/macOS/Windows dist zips + Android Maven `com.antonkarpenko:ffmpeg-kit-min:2.2.1`). Framework/`.so` structure is identical to `audio`, so this is a drop-in swap; the public Dart API is unchanged.
+  * Sources: `sk3llo/ffmpeg_kit_flutter` release `8.1.2-min` + Maven Central `ffmpeg-kit-min:2.2.1`.
+* **macOS: committed `macos/Frameworks/` are now the min binaries, shipped unsigned** (vendored on Linux CI, which cannot run `codesign`). New `scripts/sign_macos_frameworks.sh` ad-hoc signs them in place; the macOS podspec `prepare_command` now invokes it whenever `Frameworks/` already exists (idempotent), so the consuming app's CodeSign step still passes.
+* `setup_ios.sh` / `setup_macos.sh` / `windows/CMakeLists.txt` / `android/build.gradle` updated to reference the `min` artifacts. No API or source changes.
+
 ## 1.0.2 (EasyJoy self-hosted)
 
 * **macOS: pre-built frameworks are now committed to the repo** (`macos/Frameworks/`, pre-extracted from `dist/*.zip` and ad-hoc code-signed). Removed the `macos/Frameworks/` ignore in `.gitignore`.

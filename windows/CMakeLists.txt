@@ -80,7 +80,7 @@ message(STATUS "FFmpegKit prebuilt dir: ${FFMPEGKIT_PREBUILT_DIR} (arch: ${FFMPE
 #   * A CANONICAL full-gpl build (reports "full-gpl", full library set, and
 #     includes the native threading/leak/locking fixes) is produced by
 #     ffmpeg-kit/build-windows-full-gpl.sh — consume it by setting FFMPEGKIT_LOCAL_DIR.
-set(FFMPEGKIT_PACKAGE "audio" CACHE STRING "FFmpegKit variant: audio, full, min, https, ...")
+set(FFMPEGKIT_PACKAGE "min" CACHE STRING "FFmpegKit variant: audio, full, min, https, ...")
 set(FFMPEGKIT_VERSION "8.1.2" CACHE STRING "FFmpegKit release version")
 set(FFMPEGKIT_LOCAL_DIR "" CACHE PATH "Path to a locally-built bundle (dir containing bin/ [+ include/]) to use instead of downloading")
 

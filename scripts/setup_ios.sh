@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 
-# Unzip the self-hosted iOS frameworks bundled in this repo (audio variant, LGPL).
-IOS_ZIP="./dist/ffmpeg-kit-ios-audio-8.1.2.zip"
+# Unzip the self-hosted iOS frameworks bundled in this repo (min variant, LGPL).
+IOS_ZIP="./dist/ffmpeg-kit-ios-min-8.1.2.zip"
 mkdir -p Frameworks
 unzip -o "$IOS_ZIP" -d Frameworks
 rm -rf Frameworks/__MACOSX

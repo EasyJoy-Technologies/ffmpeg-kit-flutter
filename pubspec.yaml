@@ -2,7 +2,7 @@ name: ffmpeg_kit_flutter
 description: Self-hosted FFmpeg Kit for Flutter (audio variant, LGPL). Supports Android, iOS, macOS and Windows platforms.
 repository: https://github.com/EasyJoy-Technologies/ffmpeg-kit-flutter
 homepage: https://github.com/EasyJoy-Technologies/ffmpeg-kit-flutter
-version: 1.0.2
+version: 1.1.0
 environment:
   sdk: ">=3.1.0 <4.0.0"
   flutter: ">=3.0.0"
