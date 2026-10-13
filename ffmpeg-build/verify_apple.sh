@@ -13,7 +13,7 @@
 #   usage: ffmpeg-build/verify_apple.sh <work-dir> <corpus.tar.gz>
 #   corpus.tar.gz: corpus/ (verify/corpus/make_corpus.sh) + reference/results.tsv (host trimmed)
 #   needs: macOS + Xcode with an iOS simulator runtime, Rosetta 2, GNU coreutils and bash >= 4 on
-#          PATH, the $BASE_APPLE_REF tag
+#          PATH, the $BASE_REF tag
 set -euo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo="$(cd "$here/.." && pwd)"
@@ -36,7 +36,7 @@ tar -xzf "$tarball" -C "$work"
   done < MANIFEST.tsv )
 echo "corpus: $(wc -l < "$work/corpus/MANIFEST.tsv") files verified"
 
-step "2/5 frameworks: new (repo) and baseline ($BASE_APPLE_REF)"
+step "2/5 frameworks: new (repo) and baseline ($BASE_REF)"
 fw="$work/fw"; rm -rf "$fw"; mkdir -p "$fw/new-iossim" "$fw/base-iossim" "$fw/base-ios-zip"
 sign() { codesign --force --sign - --timestamp=none "$1" > /dev/null; }
 # new: macOS as committed (signed); simulator slices copied into one directory (one rpath) and
@@ -47,12 +47,12 @@ for f in "${FRAMEWORKS[@]}"; do
   sign "$fw/new-iossim/$f.framework"
 done
 # baseline macOS: committed unsigned in v1.1.0, signed by the podspec on the consuming Mac
-git -C "$repo" archive "$BASE_APPLE_REF" macos/Frameworks | tar -x -C "$fw"
+git -C "$repo" archive "$BASE_REF" macos/Frameworks | tar -x -C "$fw"
 mv "$fw/macos/Frameworks" "$fw/base-macos"; rmdir "$fw/macos"
 for f in "${FRAMEWORKS[@]}"; do sign "$fw/base-macos/$f.framework"; done
 # baseline simulator: exactly what v1.1.0's setup_ios.sh produced from the published zip
 # (x86_64 slice + device arm64 slice retagged as simulator, bitcode stripped)
-git -C "$repo" show "$BASE_APPLE_REF:$BASE_IOS_ZIP" > "$fw/base-ios.zip"
+git -C "$repo" show "$BASE_REF:$BASE_IOS_ZIP" > "$fw/base-ios.zip"
 [[ $(sha256sum < "$fw/base-ios.zip" | cut -c1-64) == "$BASE_IOS_ZIP_SHA256" ]] || die "$BASE_IOS_ZIP checksum"
 unzip -q "$fw/base-ios.zip" -d "$fw/base-ios-zip"
 find "$fw/base-ios-zip" -name '._*' -delete
@@ -112,7 +112,7 @@ for target in "${TARGETS[@]}"; do
   done
 done
 
-step "5/5 new vs $BASE_APPLE_REF (exact), then keep only outputs still to be compared"
+step "5/5 new vs $BASE_REF (exact), then keep only outputs still to be compared"
 # recorded, not fatal: the build server reads exact.txt together with the arch-kit comparison
 for target in "${TARGETS[@]}"; do
   python3 "$here/verify/compare.py" exact "$work/base-$target" "$work/res-$target" || true

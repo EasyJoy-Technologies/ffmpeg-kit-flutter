@@ -1,0 +1,26 @@
+diff --git a/scripts/main-windows.sh b/scripts/main-windows.sh
+index d9e9d35..606980b 100644
+--- a/scripts/main-windows.sh
++++ b/scripts/main-windows.sh
+@@ -110,7 +110,8 @@ cd "${BUILD_DIR}/ffmpeg-build"
+   --disable-manpages \
+   --disable-podpages \
+   --disable-txtpages \
+-  ${FF_ENABLES}
++  ${FF_ENABLES} \
++  ${NICENOTE_CONFIGURE_FLAGS:-}
+ 
+ make -j"$(nproc)"
+ make install
+diff --git a/scripts/windows-ffmpeg-kit.sh b/scripts/windows-ffmpeg-kit.sh
+index cf15d98..31b0105 100644
+--- a/scripts/windows-ffmpeg-kit.sh
++++ b/scripts/windows-ffmpeg-kit.sh
+@@ -72,6 +72,7 @@ mkdir -p "${INSTALL}/bin" "${INSTALL}/lib"
+   -lavdevice -lavfilter -lavformat -lavcodec -lswresample -lswscale -lavutil \
+   -lws2_32 -lbcrypt -lcrypt32 \
+   -Wl,--default-image-base-low \
++  ${NICENOTE_WRAPPER_LDFLAGS:-} \
+   || { echo "ERROR: wrapper link failed."; exit 1; }
+ 
+ # Install public headers next to the FFmpeg ones.
