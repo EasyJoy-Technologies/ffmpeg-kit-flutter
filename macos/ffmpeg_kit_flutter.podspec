@@ -23,16 +23,11 @@ Pod::Spec.new do |s|
   s.subspec 'audio' do |ss|
     # Adding pre-install hook for macOS
     s.prepare_command = <<-CMD
-      if [ ! -d "./Frameworks" ]; then
-        chmod +x ../scripts/setup_macos.sh
-        ../scripts/setup_macos.sh
-      else
-        # Frameworks are committed to the repo (min variant, shipped unsigned so a
-        # Linux CI can vendor them). Ad-hoc code-sign in place so the consuming
-        # macOS app's CodeSign step passes. Idempotent & safe to re-run.
-        chmod +x ../scripts/sign_macos_frameworks.sh
-        ../scripts/sign_macos_frameworks.sh ./Frameworks || true
-      fi
+      # Frameworks are committed to the repo (built by ffmpeg-build/build_apple.sh, already ad-hoc
+      # signed). Re-signing is idempotent and keeps the app's CodeSign step working should a checkout
+      # lose the signature.
+      chmod +x ../scripts/sign_macos_frameworks.sh
+      ../scripts/sign_macos_frameworks.sh ./Frameworks || true
     CMD
     ss.source_files         = 'Classes/**/*'
     ss.public_header_files  = 'Classes/**/*.h'
