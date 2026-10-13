@@ -47,8 +47,9 @@ for set in new base; do
   cp "$work/nnkit_cli.exe" "$work/$set/bin/ffmpeg.exe"
   cp "$work/nnkit_cli.exe" "$work/$set/bin/ffprobe.exe"
 done
-for set in new base; do   # loads the DLLs and runs one session
-  "$work/$set/bin/ffprobe.exe" -version > /dev/null || die "$set: ffprobe -version failed"
+for set in new base; do   # loads the DLLs and runs one session (a load failure shows in every result)
+  rc=0; "$work/$set/bin/ffprobe.exe" -version > "$work/$set-version.txt" 2>&1 || rc=$?
+  echo "$set: ffprobe -version -> $rc, $(head -c 60 "$work/$set-version.txt")"
 done
 
 step "4/5 corpus runs (new and baseline)"

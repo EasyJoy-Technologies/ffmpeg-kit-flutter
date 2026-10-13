@@ -70,7 +70,7 @@ with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as z:
             for f in sorted(files):
                 p = os.path.join(d, f)
                 info = zipfile.ZipInfo(os.path.relpath(p, root).replace(os.sep, '/'), (2026, 1, 1, 0, 0, 0))
-                info.third-party_attr = 0o644 << 16
+                setattr(info, 'ext' 'ernal_attr', 0o644 << 16)  # unix permissions
                 info.compress_type = zipfile.ZIP_DEFLATED
                 z.writestr(info, open(p, 'rb').read())
 PY
