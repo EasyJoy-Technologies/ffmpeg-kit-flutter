@@ -7,6 +7,10 @@ name: build-apple
 on:
   workflow_dispatch:
     inputs:
+      build:
+        description: Build the frameworks (false = only run the behaviour check on the committed ones)
+        type: boolean
+        default: true
       corpus_ref:
         description: Temporary branch holding corpus.tar.gz for the behaviour check (empty = build and checks only)
         required: false
@@ -42,6 +46,7 @@ jobs:
           fi
 
       - name: Build iOS + macOS
+        if: inputs.build
         run: ffmpeg-build/build_apple.sh "$RUNNER_TEMP/apple"
 
       - name: Behaviour check
@@ -62,7 +67,7 @@ jobs:
         run: |
           WORK="$RUNNER_TEMP/apple"; mkdir -p "$RUNNER_TEMP/out"
           # tar keeps the framework symlinks (Versions/Current, Headers, ...) that artifacts would flatten
-          if [[ -d ios/Frameworks && -d macos/Frameworks ]]; then
+          if [[ -f $WORK/check_apple_libs.txt ]]; then
             tar -czf "$RUNNER_TEMP/out/frameworks.tar.gz" ios/Frameworks macos/Frameworks ffmpeg-build/records
           fi
           logs=()
@@ -70,8 +75,9 @@ jobs:
             if [[ -f $WORK/$f ]]; then logs+=("$f"); fi
           done
           if [[ ${#logs[@]} -gt 0 ]]; then ( cd "$WORK" && tar -czf "$RUNNER_TEMP/out/logs.tar.gz" "${logs[@]}" ); fi
-          if compgen -G "$WORK/verify/res-*" > /dev/null; then
-            ( cd "$WORK/verify" && tar -czf "$RUNNER_TEMP/out/results.tar.gz" res-* )
+          if [[ -d $WORK/verify ]]; then
+            ( cd "$WORK/verify" && shopt -s nullglob && items=(res-* base-* exact.txt*) &&
+              if [[ ${#items[@]} -gt 0 ]]; then tar -czf "$RUNNER_TEMP/out/results.tar.gz" "${items[@]}"; fi )
           fi
           ls -la "$RUNNER_TEMP/out"
 
