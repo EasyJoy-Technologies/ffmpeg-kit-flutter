@@ -1,13 +1,11 @@
 #!/bin/bash
 set -e
 
-# Ad-hoc code-sign the committed macOS frameworks (min variant, LGPL) in place.
+# Ad-hoc code-sign the committed macOS frameworks (LGPL) in place.
 #
-# Why: the frameworks are vendored into the repo unsigned (they are downloaded
-# and repackaged on Linux CI, which cannot run macOS `codesign`). Modern Xcode
-# requires embedded frameworks to be signed, so the consuming macOS app's
-# CodeSign step fails with "code object is not signed at all" unless we ad-hoc
-# sign them first. This script is idempotent and safe to re-run.
+# Why: modern Xcode requires embedded frameworks to be signed, otherwise the consuming macOS app's
+# CodeSign step fails with "code object is not signed at all". ffmpeg-build/build_apple.sh signs
+# the frameworks when it builds them; this script is idempotent and safe to re-run.
 #
 # Invoked automatically by the macOS podspec prepare_command; can also be run
 # manually: `scripts/sign_macos_frameworks.sh <path-to-Frameworks-dir>`.

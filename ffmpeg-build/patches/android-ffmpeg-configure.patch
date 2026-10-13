@@ -1,0 +1,22 @@
+diff --git a/scripts/android/ffmpeg.sh b/scripts/android/ffmpeg.sh
+index d7f613c..de12ff4 100755
+--- a/scripts/android/ffmpeg.sh
++++ b/scripts/android/ffmpeg.sh
+@@ -482,7 +482,8 @@ fi
+   --disable-nvenc \
+   --disable-vaapi \
+   --disable-vdpau \
+-  ${CONFIGURE_POSTFIX} 1>>"${BASEDIR}"/build.log 2>&1
++  ${CONFIGURE_POSTFIX} \
++  ${NICENOTE_CONFIGURE_FLAGS} 1>>"${BASEDIR}"/build.log 2>&1
+ 
+ if [[ $? -ne 0 ]]; then
+   echo -e "failed\n\nSee build.log for details\n"
+@@ -526,6 +527,7 @@ mkdir -p "${FFMPEG_LIBRARY_PATH}"/include/libavutil/aarch64 1>>"${BASEDIR}"/buil
+ mkdir -p "${FFMPEG_LIBRARY_PATH}"/include/libavcodec/x86 1>>"${BASEDIR}"/build.log 2>&1
+ mkdir -p "${FFMPEG_LIBRARY_PATH}"/include/libavcodec/arm 1>>"${BASEDIR}"/build.log 2>&1
+ overwrite_file "${BASEDIR}"/src/ffmpeg/config.h "${FFMPEG_LIBRARY_PATH}"/include/config.h 1>>"${BASEDIR}"/build.log 2>&1
++overwrite_file "${BASEDIR}"/src/ffmpeg/config_components.h "${FFMPEG_LIBRARY_PATH}"/include/config_components.h 1>>"${BASEDIR}"/build.log 2>&1
+ overwrite_file "${BASEDIR}"/src/ffmpeg/libavcodec/mathops.h "${FFMPEG_LIBRARY_PATH}"/include/libavcodec/mathops.h 1>>"${BASEDIR}"/build.log 2>&1
+ overwrite_file "${BASEDIR}"/src/ffmpeg/libavcodec/x86/mathops.h "${FFMPEG_LIBRARY_PATH}"/include/libavcodec/x86/mathops.h 1>>"${BASEDIR}"/build.log 2>&1
+ overwrite_file "${BASEDIR}"/src/ffmpeg/libavcodec/arm/mathops.h "${FFMPEG_LIBRARY_PATH}"/include/libavcodec/arm/mathops.h 1>>"${BASEDIR}"/build.log 2>&1

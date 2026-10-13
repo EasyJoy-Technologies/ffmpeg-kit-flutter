@@ -18,18 +18,11 @@ Pod::Spec.new do |s|
   s.default_subspec = 'audio'
 
   s.dependency          'Flutter'
-  # The vendored xcframeworks ship a native arm64 iOS-simulator slice, so arm64
-  # must NOT be excluded for the simulator (required by Apple Silicon / Xcode 26+).
+  # The committed xcframeworks (ios/Frameworks, built by ffmpeg-build/build_apple.sh) ship a natively
+  # built arm64 iOS-simulator slice, so arm64 must NOT be excluded for the simulator.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
 
   s.subspec 'audio' do |ss|
-    # Adding pre-install hook
-    s.prepare_command = <<-CMD
-      if [ ! -d "./Frameworks" ]; then
-        chmod +x ../scripts/setup_ios.sh
-        ../scripts/setup_ios.sh
-        fi
-    CMD
     ss.source_files         = 'Classes/**/*'
     ss.public_header_files  = 'Classes/**/*.h'
     ss.ios.vendored_frameworks = 'Frameworks/ffmpegkit.xcframework',

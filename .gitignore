@@ -1,9 +1,8 @@
 .dart_tool/
 build/
 pubspec.lock
-ios/Frameworks/
-# macos/Frameworks/ is committed (pre-built + ad-hoc signed) so local `:path`
-# dependencies work without CocoaPods prepare_command (which does not run for path pods).
+# ios/Frameworks/ and macos/Frameworks/ are committed (built by ffmpeg-build/build_apple.sh) so local
+# `:path` dependencies work without CocoaPods prepare_command (which does not run for path pods).
 windows/ffmpeg-kit/
 android/.gradle/
 *.iml

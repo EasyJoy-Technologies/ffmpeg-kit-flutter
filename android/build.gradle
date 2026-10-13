@@ -13,13 +13,25 @@ buildscript {
     }
 }
 
-allprojects {
+// Self-hosted FFmpeg-Kit binaries bundled in this repo (see ffmpeg-build/README.md).
+// The AAR is a dependency of this plugin, but Gradle resolves it in the *app's* classpath with the
+// app's repositories. `allprojects {}` here would only reach this project (and its children), never
+// the app, so the local repository is registered on every project of the consuming build instead.
+// exclusiveContent: com.easyjoy.nicenote is looked up ONLY here, never on the network.
+def ffmpegKitMavenRepo = file("libs/maven")
+
+rootProject.allprojects {
     repositories {
-        google()
-        mavenCentral()
-        // Self-hosted FFmpeg-Kit binaries (min variant, LGPL) bundled in this repo.
-        maven { url = uri("${projectDir}/libs/maven") }
+        exclusiveContent {
+            forRepository { maven { url = uri(ffmpegKitMavenRepo) } }
+            filter { includeGroup("com.easyjoy.nicenote") }
+        }
     }
+}
+
+repositories {
+    google()
+    mavenCentral()
 }
 
 apply plugin: "com.android.library"
@@ -54,6 +66,8 @@ android {
 
     dependencies {
         implementation("androidx.annotation:annotation:1.9.1")
-        implementation("com.antonkarpenko:ffmpeg-kit-min:2.2.1")
+        // FFmpeg 8.1.2 trimmed to what NiceNote uses (audio decoders, all demuxers, aac/alac/flac/pcm
+        // encoders); arm64-v8a + armeabi-v7a NEON. Java layer identical to ffmpeg-kit-min 2.2.1.
+        implementation("com.easyjoy.nicenote:ffmpeg-kit-nicenote:8.1.2-1")
     }
 }
