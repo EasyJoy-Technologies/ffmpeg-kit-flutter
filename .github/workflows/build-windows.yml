@@ -1,0 +1,97 @@
+# Builds NiceNote's trimmed FFmpeg for Windows x86_64 (ffmpeg-build/README.md, "Windows").
+# Manual only; run it on the branch that holds ffmpeg-build/ (gh workflow run build-windows.yml --ref <branch>).
+# The zip comes back as an artifact (kept 1 day) and is committed from the build server; afterwards
+# the run, its logs and the artifact are deleted (no caches are used).
+name: build-windows
+
+on:
+  workflow_dispatch:
+    inputs:
+      build:
+        description: Build the bundle (false = only run the behaviour check on the committed one)
+        type: boolean
+        default: true
+      corpus_ref:
+        description: Temporary branch holding corpus.tar.gz for the behaviour check (empty = build and checks only)
+        required: false
+        default: ''
+      corpus_sha256:
+        description: sha256 of corpus.tar.gz
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-2025
+    timeout-minutes: 300
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: No line-ending conversion (the build scripts must stay LF)
+        shell: pwsh
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803   # v6.1.0
+        with:
+          persist-credentials: false
+
+      - uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e   # v2.33.0
+        with:
+          msystem: MINGW64
+          update: true
+          cache: false
+          install: >-
+            git make pkgconf python
+            mingw-w64-x86_64-toolchain mingw-w64-x86_64-nasm mingw-w64-x86_64-yasm
+
+      - name: Baseline tag (API comparison)
+        run: |
+          git config --global --add safe.directory '*'   # MSYS2 git on a checkout made by Windows git
+          git fetch --no-tags --depth=1 origin "refs/tags/v1.1.0:refs/tags/v1.1.0"
+
+      - name: Build Windows x86_64
+        if: inputs.build
+        run: ffmpeg-build/build_windows.sh "$(cygpath -u "$RUNNER_TEMP")/win"
+
+      - name: Behaviour check
+        if: inputs.corpus_ref != ''
+        env:
+          REF: ${{ inputs.corpus_ref }}
+          SHA: ${{ inputs.corpus_sha256 }}
+        run: |
+          [[ $REF =~ ^[A-Za-z0-9._-]+$ && $SHA =~ ^[0-9a-f]{64}$ ]] || { echo "bad inputs"; exit 1; }
+          T=$(cygpath -u "$RUNNER_TEMP")
+          git fetch --no-tags --depth=1 origin "refs/heads/$REF"
+          git show FETCH_HEAD:corpus.tar.gz > "$T/corpus.tar.gz"
+          echo "$SHA  $T/corpus.tar.gz" | sha256sum -c
+          ffmpeg-build/verify_windows.sh "$T/win/verify" "$T/corpus.tar.gz"
+
+      - name: Package
+        if: always()
+        run: |
+          T=$(cygpath -u "$RUNNER_TEMP"); WORK="$T/win"; OUT="$T/out"; mkdir -p "$OUT"
+          if [[ -f $WORK/check_windows_libs.txt ]]; then
+            tar -czf "$OUT/bundle.tar.gz" windows/dist ffmpeg-build/records
+          fi
+          logs=()
+          for f in build-windows.log check_windows_libs.txt ffmpeg-kit/build.log ffmpeg-kit/build/windows/x86_64/ffmpeg-build/ffbuild/config.log; do
+            if [[ -f $WORK/$f ]]; then logs+=("$f"); fi
+          done
+          if [[ ${#logs[@]} -gt 0 ]]; then ( cd "$WORK" && tar -czf "$OUT/logs.tar.gz" "${logs[@]}" ); fi
+          if [[ -d $WORK/verify ]]; then
+            ( cd "$WORK/verify" && shopt -s nullglob && items=(res-* base-* exact.txt*) &&
+              if [[ ${#items[@]} -gt 0 ]]; then tar -czf "$OUT/results.tar.gz" "${items[@]}"; fi )
+          fi
+          ls -la "$OUT"
+
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f   # v6.0.0
+        if: always()
+        with:
+          name: windows-build
+          path: ${{ runner.temp }}/out
+          retention-days: 1
+          if-no-files-found: error
