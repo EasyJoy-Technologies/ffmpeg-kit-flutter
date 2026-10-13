@@ -29,7 +29,7 @@ checkout_commit "$UPSTREAM_REPO" "$UPSTREAM_COMMIT_ANDROID_APPLE" "$up"
 git -C "$up" apply --check "$here/patches/apple-ffmpeg-configure.patch"
 git -C "$up" apply "$here/patches/apple-ffmpeg-configure.patch"
 # Pre-placing the source makes the upstream downloader skip it, so the pinned commit is used.
-checkout_commit "$FFMPEG_REPO" "$FFMPEG_COMMIT" "$up/src/ffmpeg"
+checkout_commit "$FFMPEG_REPO" "$FFMPEG_COMMIT" "$up/src/ffmpeg" "$FFMPEG_TAG"
 export NICENOTE_CONFIGURE_FLAGS="$(nicenote_component_flags)"
 
 step "2/6 upstream ios.sh (min variant, trimmed components, xcframeworks)"

@@ -14,7 +14,7 @@ v="$here/verify"
 [[ -s $work/corpus/MANIFEST.tsv ]] || die "corpus missing: run verify/corpus/make_corpus.sh $work/corpus"
 
 step "pinned FFmpeg source"
-checkout_commit "$FFMPEG_REPO" "$FFMPEG_COMMIT" "$work/ffmpeg-src"
+checkout_commit "$FFMPEG_REPO" "$FFMPEG_COMMIT" "$work/ffmpeg-src" "$FFMPEG_TAG"
 
 step "build command-line tools"
 pids=()

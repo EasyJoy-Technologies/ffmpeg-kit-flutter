@@ -11,8 +11,9 @@ For every framework and every architecture slice:
     arm64 simulator 14.0); no bitcode
   * install name @rpath/<name>.framework/<name>; dependencies only system libraries and the eight
     frameworks; every symbol imported from one of the eight is exported by it (same arch)
-  * API: exports identical to v1.1.0 (ffmpegkit: all symbols; FFmpeg libraries: all except the
-    internal avpriv_* cross-library symbols, whose differences are listed), and identical headers
+  * API: the symbols each library defines and exports are identical to v1.1.0 (ffmpegkit: all;
+    FFmpeg libraries: all except the internal avpriv_* cross-library symbols, whose differences are
+    listed), and the headers are identical
   * macOS: the compiled-in configure line carries the NiceNote component flags; code signature valid
 Runs on macOS (xcrun) or Linux (LLVM tools: --llvm-bin <dir>, no signature check).
 """
@@ -63,9 +64,17 @@ class Tools:
                         ([arch] if self.darwin else []) + [binary])
 
 
-def exports(t, binary, arch):
-    # "  T _name"  or re-exported "  I _name (indirect for _name)"
-    return {l.split(' (indirect')[0].split()[-1] for l in t.nm(binary, arch, '-gU').splitlines() if l.strip()}
+def exports(t, binary, arch, own_only=False):
+    """Exported symbols. Lines are "T _name" (defined here) or "I _name (indirect for _name)": the
+    FFmpeg libraries also re-export the symbols of the other FFmpeg libraries they link (a darwin
+    linker side effect). Those re-exports follow what each library happens to use, so they shrink
+    with the component list; they are not part of the library's own API."""
+    out = set()
+    for l in t.nm(binary, arch, '-gU').splitlines():
+        if not l.strip() or (own_only and '(indirect' in l):
+            continue
+        out.add(l.split(' (indirect')[0].split()[-1])
+    return out
 
 
 def imports(t, binary, arch):
@@ -148,8 +157,13 @@ def check_slice(t, label, fw_dirs, platform, archs, base_dirs, base_arch):
             # API against v1.1.0
             ba = base_arch.get(a)
             if base_b and ba:
-                base_exp = exports(t, base_b, ba)
-                new_exp = exp[(name, a)]
+                # own API must be identical; re-exports only have to cover what is imported through
+                # them (checked above for every binary that ships)
+                base_exp = exports(t, base_b, ba, own_only=True)
+                new_exp = exports(t, b, a, own_only=True)
+                reexp_gone = len(exports(t, base_b, ba) - base_exp) - len(exp[(name, a)] - new_exp)
+                if reexp_gone and a == archs[0]:
+                    notes.append(f'{label}/{name}: {reexp_gone} fewer re-exported symbols of other FFmpeg libraries')
                 internal = (lambda s: s.startswith('_avpriv_')) if name != 'ffmpegkit' else (lambda s: False)
                 lost = sorted(s for s in base_exp - new_exp if not internal(s))
                 added = sorted(s for s in new_exp - base_exp if not internal(s))

@@ -32,7 +32,7 @@ checkout_commit "$UPSTREAM_REPO" "$UPSTREAM_COMMIT_ANDROID_APPLE" "$up"
 git -C "$up" apply --check "$here/patches/android-ffmpeg-configure.patch"
 git -C "$up" apply "$here/patches/android-ffmpeg-configure.patch"
 # Pre-placing the sources makes the upstream downloader skip them, so the pinned commits are used.
-checkout_commit "$FFMPEG_REPO" "$FFMPEG_COMMIT" "$up/src/ffmpeg"
+checkout_commit "$FFMPEG_REPO" "$FFMPEG_COMMIT" "$up/src/ffmpeg" "$FFMPEG_TAG"
 checkout_commit "$CPU_FEATURES_REPO" "$CPU_FEATURES_COMMIT" "$up/src/cpu-features"
 
 step "2/6 upstream android.sh (min variant, trimmed components)"
