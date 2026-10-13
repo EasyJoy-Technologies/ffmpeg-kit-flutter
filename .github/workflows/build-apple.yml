@@ -70,7 +70,7 @@ jobs:
             if [[ -f $WORK/$f ]]; then logs+=("$f"); fi
           done
           if [[ ${#logs[@]} -gt 0 ]]; then ( cd "$WORK" && tar -czf "$RUNNER_TEMP/out/logs.tar.gz" "${logs[@]}" ); fi
-          if [[ -d $WORK/verify ]]; then
+          if compgen -G "$WORK/verify/res-*" > /dev/null; then
             ( cd "$WORK/verify" && tar -czf "$RUNNER_TEMP/out/results.tar.gz" res-* )
           fi
           ls -la "$RUNNER_TEMP/out"
