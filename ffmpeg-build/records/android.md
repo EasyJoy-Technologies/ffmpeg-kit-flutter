@@ -1,6 +1,6 @@
 # Android build record — com.easyjoy.nicenote:ffmpeg-kit-nicenote:8.1.2-1
 
-- Built: 2026-10-13T04:29Z on Linux 6.12.111+deb13-cloud-amd64 x86_64
+- Built: 2026-10-13T18:51Z on Linux 6.12.111+deb13-cloud-amd64 x86_64
 - Upstream scripts: 984fa2dba93f93cd768dccb3033e6f175c46d3b5 (+ patches/android-ffmpeg-configure.patch)
 - FFmpeg: n8.1.2 38b88335f99e76ed89ff3c93f877fdefce736c13 · cpu_features v0.8.0
 - NDK 28.2.13676358, API 24
@@ -8,26 +8,26 @@
 
 | file | bytes | sha256 |
 |---|---:|---|
-| ffmpeg-kit-nicenote-8.1.2-1.aar | 7069131 | `aa1e753b6c044d5e7ef0d3410ddd4c03cbd9c5b137a4c96def576e4f08e94594` |
+| ffmpeg-kit-nicenote-8.1.2-1.aar | 7070265 | `af0544ad997b04e4231faf6c955af97147646027683d27b7d0aeba67911910c3` |
 | ffmpeg-kit-nicenote-8.1.2-1.pom | 1696 | `d570919504e286e0e7e2c2b98b89629b9fe4a9cbbaca8eace7d7848616f00634` |
-| arm64-v8a/libavcodec.so | 3135728 | `ba7d263e238edaf0a203995511e1b9b5893276c76be629949fd1ce1841a267f1` |
-| arm64-v8a/libavdevice.so | 12608 | `2ad9d05e855229c36ff658908581919c08fd681dbb62c6219ed6d454dba490c2` |
-| arm64-v8a/libavfilter.so | 383592 | `502778092c65619c68edb2f0bfbcce7a7071489b05671ba6aeb1964aa1e89417` |
-| arm64-v8a/libavformat.so | 1419896 | `f64f8b190bd837d7ac806cea69285bb2d97f4d0426526a0b239cf46658ce852a` |
-| arm64-v8a/libavutil.so | 560416 | `35c14c6fd3b3e0bccac327bb2a2f96d5f6d38831e9485f01660a5228813c1083` |
-| arm64-v8a/libffmpegkit_abidetect.so | 33120 | `fa06d4a6a257212d7aa517db55709469e8d61029f5b8811aa8f5c5dfaad9c13c` |
-| arm64-v8a/libffmpegkit.so | 469704 | `08d8a86c30577905c4fb86c9523de1e249745895f3568d1c223fb5d09a7c35d2` |
-| arm64-v8a/libswresample.so | 75320 | `8f9d7409b21d4f1cce9c30fc896c76952b082b73e6396f45ca0bf02bf9174508` |
-| arm64-v8a/libswscale.so | 546352 | `12eee6732c6c33477f99e82884da479677dc952d740dbbe29065166be8d7b5f1` |
-| armeabi-v7a/libavcodec_neon.so | 3130720 | `a894a64c9adc234d3afe4e4c82ce54f10971bbc2082286a3be41794eab3c1c6a` |
-| armeabi-v7a/libavdevice_neon.so | 10388 | `316328ac43c27e4aaf204909046a7c2e9932d6d98e586558f6d7b64655c4fd89` |
-| armeabi-v7a/libavfilter_neon.so | 331056 | `50ad3864b44336068c3a0c6197289a6f3c69c380fdb64a0fbb3938b4291429ed` |
-| armeabi-v7a/libavformat_neon.so | 1352452 | `58d4e3ae6e7461ee7023d7934430cea073e0bac37aefb93d43f388b5db269571` |
-| armeabi-v7a/libavutil_neon.so | 456996 | `9a4b5544427a6716beff0427f441489efd9a8874f39716a9e67a1bbe8e3f5ee2` |
-| armeabi-v7a/libffmpegkit_abidetect.so | 19740 | `8e969a3e8f6624db15df44042f3131452457f328a9ed48b74b55e0549edb3f59` |
-| armeabi-v7a/libffmpegkit_armv7a_neon.so | 469684 | `6daf3151f08640389a96eb12b3fe5975486b089062c63bdfa30f65b50ed8a301` |
-| armeabi-v7a/libswresample_neon.so | 73412 | `4163a6127ec03fc8c69af8e93dc39d5b022697c84bca0ba7d625670592664061` |
-| armeabi-v7a/libswscale_neon.so | 513092 | `cb53f67ca4d7471d9ff0de47a373adaaa73a83c3723b08725fda2ac3f7445f3e` |
+| arm64-v8a/libavcodec.so | 3135728 | `224597c22e326e3c28529d1053c42242553b4b9e4c39e7899ae020b9a07f2a91` |
+| arm64-v8a/libavdevice.so | 12608 | `574f20367648abced81b5f1f1af8675f07db0d0efa494d3372fda665b472e923` |
+| arm64-v8a/libavfilter.so | 383608 | `2ce58247d72226c8f79f8083362dc6526ba1494eeaf1aa6b59a146f3581daf4c` |
+| arm64-v8a/libavformat.so | 1419912 | `6c0b286673eb58d3ae8159982d1f3b61ca6e5dbdf591f0071db6c7260cb76c5b` |
+| arm64-v8a/libavutil.so | 560432 | `b7b22f81f32e64501d372f1c6edd47f8208780ecc78e1ab81d522b5705c27afa` |
+| arm64-v8a/libffmpegkit_abidetect.so | 33120 | `ea022d4047091029e6ed8ba0dae63acd821b72634be9439377131d9adbf9a5c2` |
+| arm64-v8a/libffmpegkit.so | 469720 | `2f0475abb93cf1a5540d60f4f93938f0d194a4849caa01562e8ee213323dfc22` |
+| arm64-v8a/libswresample.so | 75336 | `d9518e0da36ca8179537beebbb6c4cf7c8b40b9d0c29f3b35ddb8a4c350ac774` |
+| arm64-v8a/libswscale.so | 546352 | `ad9bfb6dab56dfe196cad1239109649bd931e577cdf76700678b124a5867375a` |
+| armeabi-v7a/libavcodec_neon.so | 3130720 | `bdcfb6c12fde54804be1a4d3c27b5f724535b8705bca450f3ff366623843e14c` |
+| armeabi-v7a/libavdevice_neon.so | 10404 | `b6fbda1030e1afd18bf6dbaf3a30e42b37a9b8dfed9b7ce19d69048b5009204e` |
+| armeabi-v7a/libavfilter_neon.so | 331056 | `89283a314452e1c56fbb43505d81485e556f644fc67ed124c37d9c03d2b95121` |
+| armeabi-v7a/libavformat_neon.so | 1352468 | `81d1f9f73cee9f60a3c85a39534705ddc9f712a1af39eb71922d0d22a7fbd3ec` |
+| armeabi-v7a/libavutil_neon.so | 457012 | `0b668fbd30b1646a806652bf223cfd49b230d2a41267aeb53a33c60e12a5d36b` |
+| armeabi-v7a/libffmpegkit_abidetect.so | 19740 | `fce5c7159b98158639d440552b5e0dd9047e983f44f6649d89015d7d881ef77f` |
+| armeabi-v7a/libffmpegkit_armv7a_neon.so | 469732 | `785cba4fb51a29d4a4d1d5c66cd87379d3f53d49dae8067fd8cbef9ecec4c3f5` |
+| armeabi-v7a/libswresample_neon.so | 73428 | `872218aa6a50f94fd2bd23071c65e7e2fcd137b79cf8df6991ae1debdf909aa3` |
+| armeabi-v7a/libswscale_neon.so | 513108 | `db2c9996b87bcbf86b0588da60f61e4b2a840a7e1d173c105ed2d7d2e057c338` |
 
 ## Checks (verify/check_android_libs.py)
 
@@ -38,23 +38,23 @@ armeabi-v7a: 9 libraries, 19 JNI exports, 18 native methods checked
 |---|---|---:|---:|
 | arm64-v8a | libavcodec.so | 8,651,472 | 3,135,728 |
 | arm64-v8a | libavdevice.so | 55,296 | 12,608 |
-| arm64-v8a | libavfilter.so | 2,888,400 | 383,592 |
-| arm64-v8a | libavformat.so | 2,182,384 | 1,419,896 |
-| arm64-v8a | libavutil.so | 554,824 | 560,416 |
-| arm64-v8a | libffmpegkit.so | 463,704 | 469,704 |
+| arm64-v8a | libavfilter.so | 2,888,400 | 383,608 |
+| arm64-v8a | libavformat.so | 2,182,384 | 1,419,912 |
+| arm64-v8a | libavutil.so | 554,824 | 560,432 |
+| arm64-v8a | libffmpegkit.so | 463,704 | 469,720 |
 | arm64-v8a | libffmpegkit_abidetect.so | 30,232 | 33,120 |
-| arm64-v8a | libswresample.so | 72,280 | 75,320 |
+| arm64-v8a | libswresample.so | 72,280 | 75,336 |
 | arm64-v8a | libswscale.so | 535,936 | 546,352 |
 | armeabi-v7a | libavcodec_neon.so | 8,544,368 | 3,130,720 |
-| armeabi-v7a | libavdevice_neon.so | 45,828 | 10,388 |
+| armeabi-v7a | libavdevice_neon.so | 45,828 | 10,404 |
 | armeabi-v7a | libavfilter_neon.so | 2,587,344 | 331,056 |
-| armeabi-v7a | libavformat_neon.so | 2,079,268 | 1,352,452 |
-| armeabi-v7a | libavutil_neon.so | 454,436 | 456,996 |
+| armeabi-v7a | libavformat_neon.so | 2,079,268 | 1,352,468 |
+| armeabi-v7a | libavutil_neon.so | 454,436 | 457,012 |
 | armeabi-v7a | libffmpegkit_abidetect.so | 16,988 | 19,740 |
-| armeabi-v7a | libffmpegkit_armv7a_neon.so | 461,044 | 469,684 |
-| armeabi-v7a | libswresample_neon.so | 70,628 | 73,412 |
-| armeabi-v7a | libswscale_neon.so | 510,740 | 513,092 |
-| arm64-v8a | **total** | 15,434,528 | 6,636,736 |
-| armeabi-v7a | **total** | 14,770,644 | 6,357,540 |
+| armeabi-v7a | libffmpegkit_armv7a_neon.so | 461,044 | 469,732 |
+| armeabi-v7a | libswresample_neon.so | 70,628 | 73,428 |
+| armeabi-v7a | libswscale_neon.so | 510,740 | 513,108 |
+| arm64-v8a | **total** | 15,434,528 | 6,636,816 |
+| armeabi-v7a | **total** | 14,770,644 | 6,357,668 |
 
 native library checks OK
