@@ -4,7 +4,8 @@
 #
 #   usage: ffmpeg-build/build_windows.sh <work-dir>      (outside the repo; ~2 GB)
 #   needs: MSYS2 MINGW64 shell with git make pkgconf mingw-w64-x86_64-toolchain
-#          mingw-w64-x86_64-nasm mingw-w64-x86_64-yasm python; the $BASE_REF tag (baseline)
+#          mingw-w64-x86_64-nasm mingw-w64-x86_64-yasm mingw-w64-x86_64-rapidjson (header-only, used by
+#          the wrapper's JSON API) python; the $BASE_REF tag (baseline)
 #
 # Run by .github/workflows/build-windows.yml, in the MSYS2 MINGW64 environment the published
 # 8.1.2-min bundle was built in (msvcrt runtime). As on the other platforms the component list is
@@ -39,10 +40,15 @@ export NICENOTE_CONFIGURE_FLAGS="$(nicenote_component_flags) --disable-autodetec
 --extra-ldflags=-static-libgcc --extra-libs=-Wl,-Bstatic,-lwinpthread,-Bdynamic"
 export NICENOTE_WRAPPER_LDFLAGS="-static-libgcc -static-libstdc++ -Wl,--exclude-libs,ALL \
 -Wl,-Bstatic,-lwinpthread,-Bdynamic"
+[[ -f /mingw64/include/rapidjson/document.h ]] || die "rapidjson headers missing (mingw-w64-x86_64-rapidjson)"
 ( cd "$up" && FFMPEGKIT_VARIANT=min ./windows.sh ) \
   || { tail -n 60 "$up/build.log" 2>/dev/null; die "windows.sh failed"; }
-git -C "$up/src/ffmpeg" rev-parse HEAD | grep -qx "$FFMPEG_COMMIT" || die "FFmpeg source moved during the build"
 cp "$up"/build/logs/windows-*.log "$work/build-windows.log"
+# windows.sh pipes the per-arch build through tee and reports success even when it failed
+for f in avcodec-62.dll avutil-60.dll libffmpegkit.dll; do
+  [[ -f $up/build/windows/x86_64/install/bin/$f ]] || die "windows.sh did not produce $f (see build-windows.log)"
+done
+git -C "$up/src/ffmpeg" rev-parse HEAD | grep -qx "$FFMPEG_COMMIT" || die "FFmpeg source moved during the build"
 
 step "3/6 components"
 result=$(nicenote_verify_components "$up/build/windows/x86_64/ffmpeg-build/config_components.h") \
@@ -87,7 +93,7 @@ mkdir -p "$here/records"
   echo "- $(gcc --version | head -1), $(ld --version | head -1), $(nasm --version | head -1)"
   echo "- Upstream scripts: $UPSTREAM_COMMIT_WINDOWS (+ patches/windows-ffmpeg-configure.patch)"
   echo "- FFmpeg: $FFMPEG_TAG $FFMPEG_COMMIT"
-  echo "- MSYS2 packages: $(pacman -Q mingw-w64-x86_64-gcc mingw-w64-x86_64-binutils mingw-w64-x86_64-crt-git mingw-w64-x86_64-winpthreads mingw-w64-x86_64-nasm 2>/dev/null | tr '\n' ' ')"
+  echo "- MSYS2 packages: $(pacman -Q mingw-w64-x86_64-gcc mingw-w64-x86_64-binutils mingw-w64-x86_64-crt-git mingw-w64-x86_64-winpthreads mingw-w64-x86_64-nasm mingw-w64-x86_64-rapidjson 2>/dev/null | tr '\n' ' ')"
   echo
   echo '| file | bytes | sha256 |'
   echo '|---|---:|---|'
