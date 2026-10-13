@@ -4,7 +4,7 @@
 #
 #   usage: ffmpeg-build/build_apple.sh <work-dir>      (outside the repo; ~4 GB)
 #   needs: macOS, Xcode $XCODE_VERSION (DEVELOPER_DIR), autoconf automake libtool pkg-config, python3,
-#          the $BASE_APPLE_REF tag (API baseline for verify/check_apple_libs.py)
+#          the $BASE_REF tag (API baseline for verify/check_apple_libs.py)
 #
 # Run by .github/workflows/build-apple.yml. As on Android, only the component list differs from the
 # upstream "min" build (./ios.sh, ./macos.sh). iOS additionally changes packaging: xcframeworks with
@@ -61,11 +61,11 @@ done
 
 step "6/6 checks + build record"
 base="$work/base"; rm -rf "$base"; mkdir -p "$base/ios"
-git -C "$repo" show "$BASE_APPLE_REF:$BASE_IOS_ZIP" > "$base/ios.zip"
-[[ $(sha256 "$base/ios.zip") == "$BASE_IOS_ZIP_SHA256" ]] || die "$BASE_APPLE_REF:$BASE_IOS_ZIP checksum mismatch"
+git -C "$repo" show "$BASE_REF:$BASE_IOS_ZIP" > "$base/ios.zip"
+[[ $(sha256 "$base/ios.zip") == "$BASE_IOS_ZIP_SHA256" ]] || die "$BASE_REF:$BASE_IOS_ZIP checksum mismatch"
 unzip -q "$base/ios.zip" -d "$base/ios"
 find "$base" -name '._*' -delete   # AppleDouble files in the published zip
-git -C "$repo" archive "$BASE_APPLE_REF" macos/Frameworks | tar -x -C "$base"
+git -C "$repo" archive "$BASE_REF" macos/Frameworks | tar -x -C "$base"
 python3 "$here/verify/check_apple_libs.py" --ios "$repo/ios/Frameworks" --macos "$repo/macos/Frameworks" \
   --base-ios "$base/ios" --base-macos "$base/macos/Frameworks" | tee "$work/check_apple_libs.txt"
 

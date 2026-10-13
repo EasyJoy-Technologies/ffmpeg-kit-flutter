@@ -4,7 +4,7 @@ Self-hosted FFmpeg-Kit for Flutter. Runs FFmpeg & FFprobe on **Android, iOS, mac
 
 - Based on [`ffmpeg_kit_flutter_new`](https://github.com/sk3llo/ffmpeg_kit_flutter) (maintained fork of the retired [arthenica/ffmpeg-kit](https://github.com/arthenica/ffmpeg-kit)).
 - **All native binaries are bundled inside this repository** — no runtime/build-time network downloads, no dependency on third-party release assets staying online.
-- Variant: **min** (FFmpeg 8.1.2, LGPL v3.0) — no external libraries, no GPL components, smallest binary footprint, safe for closed-source store distribution.
+- Variant: **nicenote** (FFmpeg 8.1.2, LGPL v3.0) — the min line (no external libraries, no GPL components) trimmed to the audio components NiceNote uses, built from source in this repo (`ffmpeg-build/`); safe for closed-source store distribution.
 
 ## Why self-hosted?
 
@@ -19,9 +19,9 @@ The original FFmpegKit was retired in Jan 2025 and its binaries were deleted in 
 | macOS    | 10.15       | arm64, x86_64 |
 | Windows  | 10+ (x86_64)| x86_64 |
 
-## Min variant — enabled codecs
+## Enabled components
 
-**No external libraries.** Ships FFmpeg's built-in native codecs only: `aac` encode/decode, `wav`/`pcm` encode/decode, `flac` encode/decode, plus native decoders for `mp3`, `amr`, `vorbis`, `opus`, and the rest of FFmpeg's native set — sufficient for recording/transcoding to m4a(AAC)/wav/pcm and probing/decoding common audio inputs.
+**No external libraries.** The single component list in `ffmpeg-build/components.sh` (all four platforms): every FFmpeg audio decoder (211), all demuxers except reference/playlist ones, all parsers, `aac`/`alac`/`flac`/`pcm` encoders and the m4a/wav/aiff/caf/flac/raw-PCM muxers, local file protocols only. No video/image/subtitle codecs — sufficient for probing/decoding audio inputs (including the audio track of video containers) and transcoding to m4a(AAC)/wav/pcm. Details: [`ffmpeg-build/README.md`](ffmpeg-build/README.md).
 
 MP3 **encoding** is intentionally out of scope here: consumers that need it encode MP3 in Dart (e.g. a `lame` Dart binding), so the heavy `lame`/`shine`/`twolame`/`opencore-amr`/`opus`/`speex`/`soxr`/`vorbis`/`ilbc`/`vo-amrwbenc` external encoders bundled by the `audio` variant are not needed.
 
@@ -58,11 +58,11 @@ The Dart API is identical to the original `ffmpeg_kit_flutter` (and `ffmpeg_kit_
 | Android  | `android/libs/maven/com/easyjoy/nicenote/ffmpeg-kit-nicenote/8.1.2-1/` (built by `ffmpeg-build/build_android.sh`) | Gradle local maven repo |
 | iOS      | `ios/Frameworks/*.xcframework` (built by `ffmpeg-build/build_apple.sh`) | podspec `vendored_frameworks` |
 | macOS    | `macos/Frameworks/*.framework` (built by `ffmpeg-build/build_apple.sh`, ad-hoc signed) | podspec `vendored_frameworks`; `scripts/sign_macos_frameworks.sh` re-signs (prepare_command) |
-| Windows  | `windows/dist/ffmpeg-kit-windows-x86_64-min-8.1.2.zip` | `windows/CMakeLists.txt` |
+| Windows  | `windows/dist/ffmpeg-kit-windows-x86_64-nicenote-8.1.2.zip` (built by `ffmpeg-build/build_windows.sh`) | `windows/CMakeLists.txt` |
 
-**Android, iOS and macOS** are built from source in this repo with NiceNote's audio-only component list — see [`ffmpeg-build/README.md`](ffmpeg-build/README.md) (scripts, pinned commits, checks, build record). The `ffmpeg-kit-min-2.2.1.aar` kept under `android/libs/maven/com/antonkarpenko/` is the source of the unchanged Java layer and the rollback reference; it is not a dependency any more.
+**All four platforms** are built from source in this repo with NiceNote's audio-only component list — see [`ffmpeg-build/README.md`](ffmpeg-build/README.md) (scripts, pinned commits, checks, build record). The `ffmpeg-kit-min-2.2.1.aar` kept under `android/libs/maven/com/antonkarpenko/` is the source of the unchanged Java layer and the rollback reference; it is not a dependency any more.
 
-Binary provenance (Windows, until it moves to `ffmpeg-build/` as well): FFmpeg 8.1.2 min-variant builds from `sk3llo/ffmpeg_kit_flutter` release `8.1.2-min` and Maven Central `com.antonkarpenko:ffmpeg-kit-min:2.2.1`, vendored 2026-07. To rebuild from source, use the archived `arthenica/ffmpeg-kit` build scripts (`android.sh` / `ios.sh` / `macos.sh` with the min library set).
+Up to 1.1.0 the binaries were the `sk3llo/ffmpeg_kit_flutter` release `8.1.2-min` and Maven Central `com.antonkarpenko:ffmpeg-kit-min:2.2.1` (tag `v1.1.0`, the rollback point).
 
 > **macOS note:** the committed `macos/Frameworks/` are ad-hoc signed when they are built. The podspec `prepare_command` re-signs them idempotently via `scripts/sign_macos_frameworks.sh` (you can also run it manually); without a signature the consuming macOS app's CodeSign step fails with "code object is not signed at all".
 

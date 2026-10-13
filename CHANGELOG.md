@@ -1,4 +1,4 @@
-## 1.2.0 (EasyJoy self-hosted, in progress — not tagged yet)
+## 1.2.0 (EasyJoy self-hosted)
 
 * **Android: FFmpeg rebuilt with only the components NiceNote uses** (`ffmpeg-build/`). Same FFmpeg 8.1.2 source, configure options, libraries and ffmpeg-kit wrapper as `ffmpeg-kit-min` 2.2.1; the component list keeps all 211 audio decoders, all demuxers except reference/playlist ones, the parsers, aac/alac/flac/pcm encoders and the m4a/wav/aiff/caf/flac/raw-PCM muxers, and drops video/image/subtitle codecs, network protocols and unused filters.
   * New Maven coordinate `com.easyjoy.nicenote:ffmpeg-kit-nicenote:8.1.2-1` (local repo `android/libs/maven`); Java layer byte-identical to 2.2.1, only `jni/` replaced.
@@ -12,7 +12,11 @@
   * macOS `macos/Frameworks` replaced (arm64 + x86_64, signed at build time); `macos/dist/*.zip` and `scripts/setup_macos.sh` removed.
   * Size: iOS device arm64 14.5 MB → 6.7 MB; macOS (both archs) 30.3 MB → 14.0 MB.
   * Checked by `verify/check_apple_libs.py` (own exports and headers identical to 1.1.0) and `verify_apple.sh`: identical results to the 1.1.0 frameworks on arm64 macOS and simulator; see `ffmpeg-build/records/apple-verify.md`.
-* Windows follows in the last step of 1.2.0.
+* **Windows: same component list, built on GitHub Actions** (`ffmpeg-build/build_windows.sh`, `.github/workflows/build-windows.yml`, MSYS2 MINGW64 as the published bundle).
+  * `windows/dist/ffmpeg-kit-windows-x86_64-nicenote-8.1.2.zip` replaces the min zip. Windows-only extras of the min line removed (zlib, bzip2, iconv, lzma, libva, Media Foundation, D3D11VA/DXVA2, SChannel) and the MinGW runtime linked in: `bin/` holds the eight DLLs only (was 17). DLLs 24.0 MB → 10.8 MB, zip 11.1 MB → 5.0 MB.
+  * `windows/CMakeLists.txt`: package name `nicenote` (plain variable, not a cache entry, so an older build directory cannot keep pointing at the removed zip; the new name re-extracts the bundle).
+  * **Fix:** non-ASCII text in FFmpeg log lines (e.g. Chinese titles in ffprobe's report, read by `getMediaInformation`) came out as `?` on Windows; the wrapper's `avutil_log_sanitize()` compared signed chars. Android/iOS/macOS were not affected.
+  * Verified by `verify_windows.sh`: identical results to the 1.1.0 bundle except the fixed titles; see `ffmpeg-build/records/windows-verify.md`.
 
 ## 1.1.0 (EasyJoy self-hosted)
 

@@ -69,18 +69,12 @@ endif()
 set(FFMPEGKIT_PREBUILT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg-kit")
 message(STATUS "FFmpegKit prebuilt dir: ${FFMPEGKIT_PREBUILT_DIR} (arch: ${FFMPEGKIT_ARCH})")
 
-# FFmpegKit package variant to consume.
-#
-# Default is "full-gpl" so the GPL codec set (x264, x265, xvid, vid.stab, ...) is
-# available. NOTE the distinction:
-#   * The PUBLISHED Windows "full-gpl" release is a reduced custom build
-#     (x264/aom/dav1d/openh264/kvazaar/ilbc/zimg/openssl/srt + gpl). It provides
-#     libx264 and HTTPS, but FFmpegKitConfig.getPackageName() still reports "min"
-#     because it lacks the full 27-library signature.
-#   * A CANONICAL full-gpl build (reports "full-gpl", full library set, and
-#     includes the native threading/leak/locking fixes) is produced by
-#     ffmpeg-kit/build-windows-full-gpl.sh — consume it by setting FFMPEGKIT_LOCAL_DIR.
-set(FFMPEGKIT_PACKAGE "min" CACHE STRING "FFmpegKit variant: audio, full, min, https, ...")
+# FFmpegKit package bundled in windows/dist: "nicenote", built by ffmpeg-build/build_windows.sh
+# (NiceNote's component list, MinGW runtime linked in). A plain variable on purpose: the previous
+# cached default ("min") must not survive in existing build directories, and the name is part of
+# the marker below, so changing it re-extracts the bundle on machines that had the old one.
+# A different build can still be used through FFMPEGKIT_LOCAL_DIR.
+set(FFMPEGKIT_PACKAGE "nicenote")
 set(FFMPEGKIT_VERSION "8.1.2" CACHE STRING "FFmpegKit release version")
 set(FFMPEGKIT_LOCAL_DIR "" CACHE PATH "Path to a locally-built bundle (dir containing bin/ [+ include/]) to use instead of downloading")
 
