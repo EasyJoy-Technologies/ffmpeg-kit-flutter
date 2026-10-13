@@ -6,7 +6,13 @@
   * Native libraries per ABI: arm64 15.4 MB → 6.6 MB, v7a 14.8 MB → 6.4 MB (AAR, before the app's strip).
   * Fixed the bundled local Maven repository never being used: it was registered in the plugin's own `allprojects {}`, which only reaches the plugin project, while the AAR is resolved in the app's classpath with the app's repositories — so 2.2.1 was actually downloaded from Maven Central. The repository is now added to every project of the consuming build, with `exclusiveContent` so `com.easyjoy.nicenote` is resolved only locally (works offline, cannot be shadowed by a remote repository).
   * Verified by `ffmpeg-build/verify_android.sh`: 161-file corpus, full vs trimmed host builds identical; Android arm64/armv7 NEON (qemu) within the documented float tolerance.
-* iOS, macOS and Windows follow in the next steps of 1.2.0.
+  * Version string: the first 8.1.2-1 build reported "38b8833" instead of "n8.1.2" (the shallow FFmpeg checkout had no tag); rebuilt with the tag. Same code otherwise.
+* **iOS and macOS: same component list, built on GitHub Actions** (`ffmpeg-build/build_apple.sh`, `.github/workflows/build-apple.yml`, Xcode 16.4).
+  * iOS ships committed xcframeworks in `ios/Frameworks`: device `arm64`, simulator `arm64` (now built natively instead of the device slice retagged with vtool) + `x86_64`. No `arm64e`, no bitcode. `ios/dist/*.zip`, `scripts/setup_ios.sh` and the iOS `prepare_command` are removed — the command never ran for `:path` pods, so a Mac could keep stale frameworks.
+  * macOS `macos/Frameworks` replaced (arm64 + x86_64, signed at build time); `macos/dist/*.zip` and `scripts/setup_macos.sh` removed.
+  * Size: iOS device arm64 14.5 MB → 6.7 MB; macOS (both archs) 30.3 MB → 14.0 MB.
+  * Checked by `verify/check_apple_libs.py` (own exports and headers identical to 1.1.0) and `verify_apple.sh`: identical results to the 1.1.0 frameworks on arm64 macOS and simulator; see `ffmpeg-build/records/apple-verify.md`.
+* Windows follows in the last step of 1.2.0.
 
 ## 1.1.0 (EasyJoy self-hosted)
 

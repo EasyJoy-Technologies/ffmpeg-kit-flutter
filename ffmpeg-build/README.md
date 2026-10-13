@@ -18,6 +18,8 @@ are the same as in the upstream "min" build; only the component list changes.
 | `build_android.sh` | Android: pinned upstream `android.sh` → checks → AAR into `android/libs/maven` |
 | `android.version` | Version of the published AAR (`com.easyjoy.nicenote:ffmpeg-kit-nicenote`) |
 | `verify_android.sh` | Behaviour comparison on the test corpus (host and Android/qemu) |
+| `build_apple.sh` | iOS + macOS (run by `.github/workflows/build-apple.yml`): pinned upstream `ios.sh` / `macos.sh` → checks → `ios/Frameworks`, `macos/Frameworks` |
+| `verify_apple.sh` | Behaviour comparison of the Apple frameworks through the ffmpegkit API (macOS and iOS simulator) |
 | `verify/` | Checkers used by the scripts above, and the corpus generator (`verify/corpus/`) |
 | `records/` | Build record (tools, commits, sha256 of every artifact) and verification result, per platform |
 
@@ -75,6 +77,36 @@ The corpus is FFmpeg FATE samples (`verify/corpus/fate.lst`) plus generated file
 (`gen_synthetic.sh`): every common audio format, cover art, Chinese tags, multichannel, 24-bit,
 DSD, a 2-hour file, video containers, broken files and non-audio files. `MANIFEST.tsv` in the
 corpus directory records the sha256 of each input.
+
+## Apple (GitHub Actions)
+
+```sh
+gh workflow run build-apple.yml --ref ffmpeg-build \
+   -f corpus_ref=<temporary branch with corpus.tar.gz> -f corpus_sha256=<sha256>
+gh run download <run-id>        # frameworks.tar.gz, logs.tar.gz, results.tar.gz
+```
+
+- Manual workflow, Xcode 16.4 (the SDKs the published 8.1.2-min frameworks were built with). The
+  frameworks come back as an artifact (kept 1 day), are checked again and committed from the build
+  server; afterwards the run, its logs, the artifact and the temporary corpus branch are deleted.
+  `-f build=false` only runs the behaviour check on the committed frameworks.
+- iOS: xcframeworks, device `arm64` and simulator `arm64` (built natively, no longer the device
+  slice retagged) + `x86_64`. No `arm64e` (a Flutter app process is arm64) and no bitcode.
+  Committed in `ios/Frameworks`, so no `setup_ios.sh` / `prepare_command` step any more.
+- macOS: `arm64` + `x86_64`, ad-hoc signed at build time (`scripts/sign_macos_frameworks.sh`).
+- `verify/check_apple_libs.py`: slices, platform and minimum OS (iOS 12.1, macOS 10.15 as before),
+  no bitcode, install names, dependencies only system libraries and the eight frameworks, every
+  imported symbol exported by the library it is bound to, and the symbols each library defines plus
+  all headers identical to v1.1.0. (The FFmpeg libraries also re-export symbols of the other FFmpeg
+  libraries they link; those follow the component list and are only checked to cover what is
+  imported through them.)
+- `verify_apple.sh` runs NiceNote's command shapes through the ffmpegkit API
+  (`verify/apple/nnkit_cli.m`) on macOS arm64 / x86_64 and the iOS simulator arm64 / x86_64:
+  1. against the **v1.1.0 frameworks** run the same way on the same target: `compare.py exact`;
+  2. against the Linux reference: `compare.py arch-kit` (the arch rules; failing exit codes and the
+     `-progress` duration value are ffmpeg-kit's, not the build's, and are compared in kind only).
+
+  The results are recorded in `records/apple-verify.md`.
 
 ## Rollback
 
