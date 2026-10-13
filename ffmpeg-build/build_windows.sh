@@ -38,8 +38,12 @@ export NICENOTE_CONFIGURE_FLAGS="$(nicenote_component_flags) --disable-autodetec
 --disable-zlib --disable-bzlib --disable-iconv --disable-lzma --disable-mediafoundation \
 --disable-d3d11va --disable-dxva2 --disable-schannel \
 --extra-ldflags=-static-libgcc --extra-libs=-Wl,-Bstatic,-lwinpthread,-Bdynamic"
+# The static libstdc++ needs winpthread (clock_gettime64, nanosleep64). The driver appends libstdc++
+# and its own -lpthread after everything given here, so a plain -lwinpthread is scanned too early and
+# the symbols end up bound to libwinpthread-1.dll: take the whole archive in instead (not exported,
+# --exclude-libs).
 export NICENOTE_WRAPPER_LDFLAGS="-static-libgcc -static-libstdc++ -Wl,--exclude-libs,ALL \
--Wl,-Bstatic,-lwinpthread,-Bdynamic"
+-Wl,-Bstatic,--whole-archive,-lwinpthread,--no-whole-archive,-Bdynamic"
 [[ -f /mingw64/include/rapidjson/document.h ]] || die "rapidjson headers missing (mingw-w64-x86_64-rapidjson)"
 ( cd "$up" && FFMPEGKIT_VARIANT=min ./windows.sh ) \
   || { tail -n 60 "$up/build.log" 2>/dev/null; die "windows.sh failed"; }

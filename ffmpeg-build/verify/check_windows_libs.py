@@ -9,7 +9,7 @@
     imported from a bundle DLL is exported by it
   * exports identical to v1.1.0: libffmpegkit.dll (the C API the plugin loads) completely, the
     FFmpeg DLLs except the internal avpriv_* cross-library symbols (differences are listed)
-  * include/ identical to v1.1.0; avutil reports "FFmpeg version n8.1.2"
+  * include/ identical to v1.1.0 (line endings aside); avutil reports "FFmpeg version n8.1.2"
 """
 import argparse, os, struct, sys
 
@@ -100,11 +100,13 @@ class PE:
 
 
 def tree(root):
+    """Header contents with line endings normalised: the v1.1.0 zip was packed from a Windows
+    checkout (CRLF), the build checks out with LF."""
     out = {}
     for d, _, files in os.walk(root):
         for f in files:
             p = os.path.join(d, f)
-            out[os.path.relpath(p, root).replace(os.sep, '/')] = open(p, 'rb').read()
+            out[os.path.relpath(p, root).replace(os.sep, '/')] = open(p, 'rb').read().replace(b'\r\n', b'\n')
     return out
 
 
@@ -142,7 +144,8 @@ def main():
                 if missing:
                     problems.append(f'{f}: {len(missing)} imports not exported by {dll}: {missing[:5]}')
             elif low not in SYSTEM:
-                problems.append(f'{f}: imports {dll}, which is neither a system DLL nor in the bundle')
+                problems.append(f'{f}: imports {dll} ({", ".join(s or "#ordinal" for s in syms[:6])}), '
+                                f'which is neither a system DLL nor in the bundle')
         base_path = os.path.join(bin_base, f)
         if os.path.exists(base_path):
             base_exp = PE(base_path).exports()
