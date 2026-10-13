@@ -1,0 +1,84 @@
+# Builds NiceNote's trimmed FFmpeg for iOS and macOS (ffmpeg-build/README.md, "Apple").
+# Manual only; run it on the branch that holds ffmpeg-build/ (gh workflow run build-apple.yml --ref <branch>).
+# The frameworks come back as an artifact (kept 1 day) and are committed from the build
+# server; afterwards the run, its logs and the artifact are deleted (no caches are used).
+name: build-apple
+
+on:
+  workflow_dispatch:
+    inputs:
+      corpus_asset:
+        description: Release asset id of corpus.tar.gz for the behaviour check (empty = build and checks only)
+        required: false
+        default: ''
+      corpus_sha256:
+        description: sha256 of corpus.tar.gz
+        required: false
+        default: ''
+
+permissions:
+  contents: write   # the corpus is a draft-release asset, which only a token with push access can read
+
+jobs:
+  apple:
+    runs-on: macos-15
+    timeout-minutes: 300
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
+      LIBTOOLIZE: glibtoolize   # Homebrew's libtoolize; Apple's libtool is a different program
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803   # v6.1.0
+        with:
+          persist-credentials: false
+
+      - name: Baseline tag (API comparison)
+        run: git fetch --no-tags --depth=1 origin "refs/tags/v1.1.0:refs/tags/v1.1.0"
+
+      - name: Tools
+        run: |
+          brew install autoconf automake libtool bash coreutils
+          if ! arch -x86_64 /usr/bin/true 2>/dev/null; then
+            sudo softwareupdate --install-rosetta --agree-to-license
+          fi
+
+      - name: Build iOS + macOS
+        run: ffmpeg-build/build_apple.sh "$RUNNER_TEMP/apple"
+
+      - name: Behaviour check
+        if: inputs.corpus_asset != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ASSET: ${{ inputs.corpus_asset }}
+          SHA: ${{ inputs.corpus_sha256 }}
+        run: |
+          [[ $ASSET =~ ^[0-9]+$ && $SHA =~ ^[0-9a-f]{64}$ ]] || { echo "bad inputs"; exit 1; }
+          gh api -H 'Accept: application/octet-stream' "repos/$GITHUB_REPOSITORY/releases/assets/$ASSET" > "$RUNNER_TEMP/corpus.tar.gz"
+          echo "$SHA  $RUNNER_TEMP/corpus.tar.gz" | shasum -a 256 -c
+          PATH="$(brew --prefix coreutils)/libexec/gnubin:$(brew --prefix)/bin:$PATH" \
+            ffmpeg-build/verify_apple.sh "$RUNNER_TEMP/apple/verify" "$RUNNER_TEMP/corpus.tar.gz"
+
+      - name: Package
+        if: always()
+        run: |
+          WORK="$RUNNER_TEMP/apple"; mkdir -p "$RUNNER_TEMP/out"
+          # tar keeps the framework symlinks (Versions/Current, Headers, ...) that artifacts would flatten
+          if [[ -d ios/Frameworks && -d macos/Frameworks ]]; then
+            tar -czf "$RUNNER_TEMP/out/frameworks.tar.gz" ios/Frameworks macos/Frameworks ffmpeg-build/records
+          fi
+          logs=()
+          for f in build-ios.log build-macos.log check_apple_libs.txt ffmpeg-kit/build.log ffmpeg-kit/src/ffmpeg/ffbuild/config.log; do
+            if [[ -f $WORK/$f ]]; then logs+=("$f"); fi
+          done
+          if [[ ${#logs[@]} -gt 0 ]]; then ( cd "$WORK" && tar -czf "$RUNNER_TEMP/out/logs.tar.gz" "${logs[@]}" ); fi
+          if [[ -d $WORK/verify ]]; then
+            ( cd "$WORK/verify" && tar -czf "$RUNNER_TEMP/out/results.tar.gz" res-* )
+          fi
+          ls -la "$RUNNER_TEMP/out"
+
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f   # v6.0.0
+        if: always()
+        with:
+          name: apple-build
+          path: ${{ runner.temp }}/out
+          retention-days: 1
+          if-no-files-found: error
