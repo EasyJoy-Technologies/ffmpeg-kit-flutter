@@ -47,10 +47,13 @@ xcrun --sdk iphonesimulator clang -fobjc-arc -O1 -Wall -Werror -arch arm64 -arch
 for d in macos iossim; do cp "$bin/$d/ffmpeg" "$bin/$d/ffprobe"; done
 
 step "3/4 corpus runs (${TARGETS[*]})"
+# newest iOS runtime not newer than the SDK of the selected Xcode (runners carry runtimes of other Xcodes)
 runtime=$(xcrun simctl list runtimes available -j | python3 -c '
 import json, sys
-rs = [r for r in json.load(sys.stdin)["runtimes"] if r.get("platform") == "iOS"]
-print(max(rs, key=lambda r: [int(x) for x in r["version"].split(".")])["identifier"])')
+v = lambda s: [int(x) for x in s.split(".")][:2]
+sdk = v(sys.argv[1])
+rs = [r for r in json.load(sys.stdin)["runtimes"] if r.get("platform") == "iOS" and v(r["version"]) <= sdk]
+print(max(rs, key=lambda r: v(r["version"]))["identifier"])' "$(xcrun --sdk iphonesimulator --show-sdk-version)")
 udid=$(xcrun simctl create nn-verify com.apple.CoreSimulator.SimDeviceType.iPhone-16 "$runtime")
 trap 'xcrun simctl shutdown "$udid" > /dev/null 2>&1 || true; xcrun simctl delete "$udid" > /dev/null 2>&1 || true' EXIT
 xcrun simctl boot "$udid"
