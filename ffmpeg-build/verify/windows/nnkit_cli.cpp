@@ -3,7 +3,8 @@
 // drive the shipped Windows bundle like the ffmpeg / ffprobe programs (verify_windows.sh).
 // The program name selects the tool: install it twice, as ffmpeg.exe and ffprobe.exe, next to the
 // DLLs.
-//   stdout: ffprobe's report (ffmpeg-kit logs it at AV_LOG_STDERR, -16)
+//   stdout: ffprobe's report (ffmpeg-kit logs it at AV_LOG_STDERR, -16) and nothing else: the
+//           library's own console messages ("Loading ffmpeg-kit." ...) are sent to stderr
 //   stderr: every other log line
 //   exit:   the session return code, as the app sees it
 #include <windows.h>
@@ -109,6 +110,11 @@ int main(int argc, char** argv) {
         return 2;
     }
     _setmode(_fileno(stdout), _O_BINARY);  // the report is compared byte for byte
+    // The DLL prints to the process' stdout while loading and running; point fd 1 at stderr until
+    // the report is written (same C runtime, msvcrt, so this covers its printf / std::cout).
+    std::fflush(stdout);
+    const int real_stdout = _dup(1);
+    _dup2(2, 1);
     HMODULE lib = LoadLibraryA("libffmpegkit.dll");
     if (!lib) { std::fprintf(stderr, "nnkit_cli: LoadLibrary failed (%lu)\n", GetLastError()); return 253; }
     auto free_fn = load<FreeFn>(lib, "ffmpegkit_free");
@@ -123,6 +129,9 @@ int main(int argc, char** argv) {
     load<ExecuteFn>(lib, probe ? "ffmpegkit_ffprobe_execute" : "ffmpegkit_ffmpeg_execute")(id);
 
     char* logs = load<LogsFn>(lib, "ffmpegkit_session_get_all_logs_json")(id, kLogTimeoutMs);
+    const int rc = load<ReturnCodeFn>(lib, "ffmpegkit_session_get_return_code")(id);
+    std::fflush(stdout);
+    _dup2(real_stdout, 1);
     if (logs) {
         for (const LogLine& l : parse_logs(logs)) {
             std::fwrite(l.message.data(), 1, l.message.size(), l.level == kAvLogStderr ? stdout : stderr);
@@ -130,5 +139,6 @@ int main(int argc, char** argv) {
         free_fn(logs);
     }
     std::fflush(stdout);
-    return load<ReturnCodeFn>(lib, "ffmpegkit_session_get_return_code")(id);
+    std::fflush(stderr);
+    return rc;
 }
