@@ -1,3 +1,13 @@
+## 1.2.0 (EasyJoy self-hosted, in progress — not tagged yet)
+
+* **Android: FFmpeg rebuilt with only the components NiceNote uses** (`ffmpeg-build/`). Same FFmpeg 8.1.2 source, configure options, libraries and ffmpeg-kit wrapper as `ffmpeg-kit-min` 2.2.1; the component list keeps all 211 audio decoders, all demuxers except reference/playlist ones, the parsers, aac/alac/flac/pcm encoders and the m4a/wav/aiff/caf/flac/raw-PCM muxers, and drops video/image/subtitle codecs, network protocols and unused filters.
+  * New Maven coordinate `com.easyjoy.nicenote:ffmpeg-kit-nicenote:8.1.2-1` (local repo `android/libs/maven`); Java layer byte-identical to 2.2.1, only `jni/` replaced.
+  * ABIs: `arm64-v8a` and `armeabi-v7a` (NEON set only). `x86`/`x86_64` and the non-NEON v7a fallback are no longer shipped.
+  * Native libraries per ABI: arm64 15.4 MB → 6.6 MB, v7a 14.8 MB → 6.4 MB (AAR, before the app's strip).
+  * Fixed the bundled local Maven repository never being used: it was registered in the plugin's own `allprojects {}`, which only reaches the plugin project, while the AAR is resolved in the app's classpath with the app's repositories — so 2.2.1 was actually downloaded from Maven Central. The repository is now added to every project of the consuming build, with `exclusiveContent` so `com.easyjoy.nicenote` is resolved only locally (works offline, cannot be shadowed by a remote repository).
+  * Verified by `ffmpeg-build/verify_android.sh`: 161-file corpus, full vs trimmed host builds identical; Android arm64/armv7 NEON (qemu) within the documented float tolerance.
+* iOS, macOS and Windows follow in the next steps of 1.2.0.
+
 ## 1.1.0 (EasyJoy self-hosted)
 
 * **Switched variant `audio` → `min` (FFmpeg 8.1.2) to cut binary size.** The `audio` variant statically linked 10 external encoders (`lame`, `libilbc`, `libvorbis`, `opencore-amr`, `opus`, `shine`, `soxr`, `speex`, `twolame`, `vo-amrwbenc`) that consumers were not using — MP3 encoding is done in Dart, and only native AAC(m4a)/WAV/PCM encode + native decode/probe are needed. The `min` variant ships **no external libraries** while keeping all FFmpeg-native codecs, so it is strictly smaller with no loss of used functionality.

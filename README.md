@@ -14,7 +14,7 @@ The original FFmpegKit was retired in Jan 2025 and its binaries were deleted in 
 
 | Platform | Min version | Architectures |
 |----------|-------------|---------------|
-| Android  | API 24      | arm64-v8a, armeabi-v7a, x86, x86_64 |
+| Android  | API 24      | arm64-v8a, armeabi-v7a (NEON) |
 | iOS      | 14.0        | arm64 (device), arm64 + x86_64 (simulator) |
 | macOS    | 10.15       | arm64, x86_64 |
 | Windows  | 10+ (x86_64)| x86_64 |
@@ -55,12 +55,14 @@ The Dart API is identical to the original `ffmpeg_kit_flutter` (and `ffmpeg_kit_
 
 | Platform | Location in repo | Consumed by |
 |----------|------------------|-------------|
-| Android  | `android/libs/maven/…/ffmpeg-kit-min-2.2.1.aar` | Gradle local maven repo |
+| Android  | `android/libs/maven/com/easyjoy/nicenote/ffmpeg-kit-nicenote/8.1.2-1/` (built by `ffmpeg-build/build_android.sh`) | Gradle local maven repo |
 | iOS      | `ios/dist/ffmpeg-kit-ios-min-8.1.2.zip` | `scripts/setup_ios.sh` (pod prepare_command) |
 | macOS    | `macos/dist/ffmpeg-kit-macos-min-8.1.2.zip` + committed `macos/Frameworks/` | `scripts/setup_macos.sh` / `scripts/sign_macos_frameworks.sh` (pod prepare_command) |
 | Windows  | `windows/dist/ffmpeg-kit-windows-x86_64-min-8.1.2.zip` | `windows/CMakeLists.txt` |
 
-Binary provenance: FFmpeg 8.1.2 min-variant builds from `sk3llo/ffmpeg_kit_flutter` release `8.1.2-min` and Maven Central `com.antonkarpenko:ffmpeg-kit-min:2.2.1`, vendored 2026-07. To rebuild from source, use the archived `arthenica/ffmpeg-kit` build scripts (`android.sh` / `ios.sh` / `macos.sh` with the min library set).
+**Android** is built from source in this repo with NiceNote's audio-only component list — see [`ffmpeg-build/README.md`](ffmpeg-build/README.md) (scripts, pinned commits, checks, build record). The `ffmpeg-kit-min-2.2.1.aar` kept under `android/libs/maven/com/antonkarpenko/` is the source of the unchanged Java layer and the rollback reference; it is not a dependency any more.
+
+Binary provenance (iOS / macOS / Windows, until they move to `ffmpeg-build/` as well): FFmpeg 8.1.2 min-variant builds from `sk3llo/ffmpeg_kit_flutter` release `8.1.2-min` and Maven Central `com.antonkarpenko:ffmpeg-kit-min:2.2.1`, vendored 2026-07. To rebuild from source, use the archived `arthenica/ffmpeg-kit` build scripts (`android.sh` / `ios.sh` / `macos.sh` with the min library set).
 
 > **macOS note:** the committed `macos/Frameworks/` are the min binaries shipped **unsigned** (vendored on Linux CI, which cannot run `codesign`). The podspec `prepare_command` ad-hoc signs them in place on the consuming Mac via `scripts/sign_macos_frameworks.sh`; you can also run that script manually. Without signing, the consuming macOS app's CodeSign step would fail with "code object is not signed at all".
 
