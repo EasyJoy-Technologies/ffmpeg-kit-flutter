@@ -19,6 +19,8 @@ are the same as in the upstream "min" build; only the component list changes.
 | `android.version` | Version of the published AAR (`com.easyjoy.nicenote:ffmpeg-kit-nicenote`) |
 | `verify_android.sh` | Behaviour comparison on the test corpus (host and Android/qemu) |
 | `build_apple.sh` | iOS + macOS (run by `.github/workflows/build-apple.yml`): pinned upstream `ios.sh` / `macos.sh` → checks → `ios/Frameworks`, `macos/Frameworks` |
+| `build_windows.sh` | Windows x86_64 (run by `.github/workflows/build-windows.yml`, MSYS2 MINGW64): pinned upstream `windows.sh` → checks → `windows/dist/*.zip` |
+| `verify_windows.sh` | Behaviour comparison of the Windows bundle, loaded like the plugin loads it |
 | `verify_apple.sh` | Behaviour comparison of the Apple frameworks through the ffmpegkit API (macOS and iOS simulator) |
 | `verify/` | Checkers used by the scripts above, and the corpus generator (`verify/corpus/`) |
 | `records/` | Build record (tools, commits, sha256 of every artifact) and verification result, per platform |
@@ -108,6 +110,31 @@ gh run download <run-id>        # frameworks.tar.gz, logs.tar.gz, results.tar.gz
 
   The results are recorded in `records/apple-verify.md`.
 
+## Windows (GitHub Actions)
+
+```sh
+gh workflow run build-windows.yml --ref ffmpeg-build \
+   -f corpus_ref=<temporary branch with corpus.tar.gz> -f corpus_sha256=<sha256>
+```
+
+- Manual workflow on `windows-2025` with MSYS2 **MINGW64** (msvcrt), the environment the published
+  8.1.2-min bundle was built in. MSYS2 packages roll; the build record lists the versions used.
+  Artifact kept 1 day; run, logs, artifact and the corpus branch are deleted afterwards.
+- Same component list. In addition the Windows-only extras of the upstream min line are off (zlib,
+  bzip2, iconv, lzma/libva, Media Foundation, D3D11VA/DXVA2, SChannel; `--disable-autodetect`), and
+  libgcc / libstdc++ / winpthread are linked in, so `bin/` is the eight DLLs only. The zip is
+  `ffmpeg-kit-windows-x86_64-nicenote-8.1.2.zip`; `windows/CMakeLists.txt` re-extracts on the new name.
+- `patches/windows-wrapper-log-sanitize.patch` fixes one wrapper bug: `avutil_log_sanitize()` compared
+  signed chars, so every non-ASCII byte of a log line became `?` (Chinese titles read `??????`).
+- `verify/check_windows_libs.py` (pure-Python PE reader): DLL set, imports only Windows system DLLs or
+  bundle DLLs and all resolved, exports identical to v1.1.0 (libffmpegkit completely), headers
+  identical (line endings aside), version string.
+- `verify_windows.sh` loads `libffmpegkit.dll` the way the plugin does (`verify/windows/nnkit_cli.cpp`:
+  `LoadLibraryA` + the C API, DLLs rebased with `editbin` like `windows/CMakeLists.txt`) and runs the
+  corpus with the new and the v1.1.0 bundle: `compare.py exact` (differences: only the fixed titles),
+  then `arch-kit` against the Linux reference on the build server (`records/windows-verify.md`).
+
 ## Rollback
 
-Tag `v1.1.0` of this repository is the untrimmed build (Maven `ffmpeg-kit-min:2.2.1`).
+Tag `v1.1.0` of this repository is the untrimmed build (Maven `ffmpeg-kit-min:2.2.1`, the sk3llo
+8.1.2-min frameworks and Windows zip).

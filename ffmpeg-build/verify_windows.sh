@@ -18,6 +18,7 @@ source "$here/lib/common.sh"
 work=$(mkdir -p "${1:?usage: verify_windows.sh <work-dir> <corpus.tar.gz>}" && cd "$1" && pwd)
 tarball=${2:?corpus.tar.gz}
 [[ ${MSYSTEM:-} == MINGW64 ]] || die "run in the MSYS2 MINGW64 environment"
+export PYTHONUTF8=1   # MINGW64 python defaults to cp1252 and cannot print the Chinese titles
 
 step "1/5 corpus"
 rm -rf "$work/corpus" "$work/reference"
