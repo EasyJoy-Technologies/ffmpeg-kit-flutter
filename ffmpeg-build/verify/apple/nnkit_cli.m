@@ -9,6 +9,10 @@
 #import <ffmpegkit/FFmpegKitConfig.h>
 #import <ffmpegkit/FFprobeKit.h>
 
+// Level.h LevelAVLogStdErr / fftools AV_LOG_STDERR: the level ffprobe writes its report at
+// (Level.h is not reachable from the umbrella headers above).
+#define NN_AV_LOG_STDERR (-16)
+
 int main(int argc, const char *argv[]) {
     @autoreleasepool {
         NSString *tool = [[NSString stringWithUTF8String:argv[0]] lastPathComponent];
@@ -28,7 +32,7 @@ int main(int argc, const char *argv[]) {
             return 2;
         }
         for (Log *log in [session getAllLogsWithTimeout:60000]) {
-            fputs([[log getMessage] UTF8String], [log getLevel] == (int)LevelAVLogStdErr ? stdout : stderr);
+            fputs([[log getMessage] UTF8String], [log getLevel] == NN_AV_LOG_STDERR ? stdout : stderr);
         }
         ReturnCode *rc = [session getReturnCode];
         if (rc == nil) {

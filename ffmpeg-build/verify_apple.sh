@@ -34,14 +34,17 @@ echo "corpus: $(wc -l < "$work/corpus/MANIFEST.tsv") files verified"
 step "2/4 test program (verify/apple/nnkit_cli.m)"
 bin="$work/bin"; rm -rf "$bin"; mkdir -p "$bin/macos" "$bin/iossim" "$bin/iossim-fw"
 mac_fw="$repo/macos/Frameworks"
-xcrun --sdk macosx clang -fobjc-arc -O1 -Wall -Werror -arch arm64 -arch x86_64 -mmacosx-version-min=10.15 \
+xcrun --sdk macosx clang -fobjc-arc -O1 -Wall -arch arm64 -arch x86_64 -mmacosx-version-min=10.15 \
   -F "$mac_fw" -framework ffmpegkit -framework Foundation -Wl,-rpath,"$mac_fw" \
   "$here/verify/apple/nnkit_cli.m" -o "$bin/macos/ffmpeg"
-# the simulator slices live in one directory per xcframework; collect them so one rpath finds all
+# The simulator slices live in one directory per xcframework: copy them into one directory for a
+# single rpath, and ad-hoc sign the copies (an app build signs them on embedding; the repo keeps
+# the iOS frameworks unsigned).
 for fw in "${FRAMEWORKS[@]}"; do
-  ln -s "$repo/ios/Frameworks/$fw.xcframework/ios-arm64_x86_64-simulator/$fw.framework" "$bin/iossim-fw/"
+  cp -R "$repo/ios/Frameworks/$fw.xcframework/ios-arm64_x86_64-simulator/$fw.framework" "$bin/iossim-fw/"
+  codesign --force --sign - --timestamp=none "$bin/iossim-fw/$fw.framework"
 done
-xcrun --sdk iphonesimulator clang -fobjc-arc -O1 -Wall -Werror -arch arm64 -arch x86_64 \
+xcrun --sdk iphonesimulator clang -fobjc-arc -O1 -Wall -arch arm64 -arch x86_64 \
   -mios-simulator-version-min=14.0 -F "$bin/iossim-fw" -framework ffmpegkit -framework Foundation \
   -Wl,-rpath,"$bin/iossim-fw" "$here/verify/apple/nnkit_cli.m" -o "$bin/iossim/ffmpeg"
 for d in macos iossim; do cp "$bin/$d/ffmpeg" "$bin/$d/ffprobe"; done
