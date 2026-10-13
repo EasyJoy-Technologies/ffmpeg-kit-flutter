@@ -3,7 +3,8 @@
 # the bundle is loaded the way the Flutter plugin loads it (verify/windows/nnkit_cli.cpp: LoadLibraryA
 # + the C API, DLLs rebased with editbin like windows/CMakeLists.txt) and run with NiceNote's
 # argument shapes (verify/run_corpus.sh), together with the v1.1.0 bundle:
-#   1. here, new vs v1.1.0 on the same machine: compare.py exact
+#   1. here, new vs v1.1.0 on the same machine: compare.py exact (expected differences: the probe
+#      titles with non-ASCII text, which v1.1.0 reported as '?', see build_windows.sh)
 #   2. on the build server, new vs the Linux reference: compare.py arch-kit
 # Outputs identical to the reference (new) or to the new results (v1.1.0) are deleted here.
 #

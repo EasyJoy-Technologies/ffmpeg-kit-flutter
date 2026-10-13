@@ -9,7 +9,9 @@
 #
 # Run by .github/workflows/build-windows.yml, in the MSYS2 MINGW64 environment the published
 # 8.1.2-min bundle was built in (msvcrt runtime). As on the other platforms the component list is
-# the shared one; in addition (plan §2.2/§2.3) the Windows-only extras of the upstream "min" line
+# the shared one, and one wrapper bug is fixed (patches/windows-wrapper-log-sanitize.patch: every
+# non-ASCII byte of a log line, e.g. a Chinese title in ffprobe's report, became '?'). In addition
+# (plan §2.2/§2.3) the Windows-only extras of the upstream "min" line
 # are switched off to match Android/iOS/macOS — zlib, bzip2, iconv, lzma/libva (autodetected),
 # Media Foundation, D3D11VA/DXVA2, SChannel — and the MinGW runtime (libgcc, libstdc++,
 # winpthread) is linked statically, so the bundle is the eight DLLs and nothing else.
@@ -27,8 +29,11 @@ sha256() { sha256sum "$1" | cut -c1-64; }
 step "1/6 upstream scripts + sources"
 up="$work/ffmpeg-kit"
 checkout_commit "$UPSTREAM_REPO" "$UPSTREAM_COMMIT_WINDOWS" "$up"
-git -C "$up" apply --check "$here/patches/windows-ffmpeg-configure.patch"
-git -C "$up" apply "$here/patches/windows-ffmpeg-configure.patch"
+# configure/link flags hook, and the wrapper's log sanitising fix (non-ASCII text became '?')
+for patch in windows-ffmpeg-configure.patch windows-wrapper-log-sanitize.patch; do
+  git -C "$up" apply --check "$here/patches/$patch"
+  git -C "$up" apply "$here/patches/$patch"
+done
 # Pre-placing the sources makes the upstream downloader skip them, so the pinned commits are used.
 checkout_commit "$FFMPEG_REPO" "$FFMPEG_COMMIT" "$up/src/ffmpeg" "$FFMPEG_TAG"
 checkout_commit "$CPU_FEATURES_REPO" "$CPU_FEATURES_COMMIT" "$up/src/cpu-features"   # fetched, unused on Windows
@@ -95,7 +100,7 @@ mkdir -p "$here/records"
   echo
   echo "- Built: $(date -u +%Y-%m-%dT%H:%MZ) on $(uname -s) $(uname -r) (MSYS2 $MSYSTEM)"
   echo "- $(gcc --version | head -1), $(ld --version | head -1), $(nasm --version | head -1)"
-  echo "- Upstream scripts: $UPSTREAM_COMMIT_WINDOWS (+ patches/windows-ffmpeg-configure.patch)"
+  echo "- Upstream scripts: $UPSTREAM_COMMIT_WINDOWS (+ patches/windows-ffmpeg-configure.patch, patches/windows-wrapper-log-sanitize.patch)"
   echo "- FFmpeg: $FFMPEG_TAG $FFMPEG_COMMIT"
   echo "- MSYS2 packages: $(pacman -Q mingw-w64-x86_64-gcc mingw-w64-x86_64-binutils mingw-w64-x86_64-crt-git mingw-w64-x86_64-winpthreads mingw-w64-x86_64-nasm mingw-w64-x86_64-rapidjson 2>/dev/null | tr '\n' ' ')"
   echo
