@@ -7,8 +7,8 @@ name: build-apple
 on:
   workflow_dispatch:
     inputs:
-      corpus_asset:
-        description: Release asset id of corpus.tar.gz for the behaviour check (empty = build and checks only)
+      corpus_ref:
+        description: Temporary branch holding corpus.tar.gz for the behaviour check (empty = build and checks only)
         required: false
         default: ''
       corpus_sha256:
@@ -17,7 +17,7 @@ on:
         default: ''
 
 permissions:
-  contents: write   # the corpus is a draft-release asset, which only a token with push access can read
+  contents: read
 
 jobs:
   apple:
@@ -45,14 +45,14 @@ jobs:
         run: ffmpeg-build/build_apple.sh "$RUNNER_TEMP/apple"
 
       - name: Behaviour check
-        if: inputs.corpus_asset != ''
+        if: inputs.corpus_ref != ''
         env:
-          GH_TOKEN: ${{ github.token }}
-          ASSET: ${{ inputs.corpus_asset }}
+          REF: ${{ inputs.corpus_ref }}
           SHA: ${{ inputs.corpus_sha256 }}
         run: |
-          [[ $ASSET =~ ^[0-9]+$ && $SHA =~ ^[0-9a-f]{64}$ ]] || { echo "bad inputs"; exit 1; }
-          gh api -H 'Accept: application/octet-stream' "repos/$GITHUB_REPOSITORY/releases/assets/$ASSET" > "$RUNNER_TEMP/corpus.tar.gz"
+          [[ $REF =~ ^[A-Za-z0-9._-]+$ && $SHA =~ ^[0-9a-f]{64}$ ]] || { echo "bad inputs"; exit 1; }
+          git fetch --no-tags --depth=1 origin "refs/heads/$REF"
+          git show FETCH_HEAD:corpus.tar.gz > "$RUNNER_TEMP/corpus.tar.gz"
           echo "$SHA  $RUNNER_TEMP/corpus.tar.gz" | shasum -a 256 -c
           PATH="$(brew --prefix coreutils)/libexec/gnubin:$(brew --prefix)/bin:$PATH" \
             ffmpeg-build/verify_apple.sh "$RUNNER_TEMP/apple/verify" "$RUNNER_TEMP/corpus.tar.gz"
