@@ -5,8 +5,8 @@
 #
 # <series> is required when tool/version/series.conf lists more than one. --line X.Y changes the
 # first two digits (explicit human instruction only); the patch still goes +1.
-# Afterwards: git add the printed files, put the printed tag in the commit message, then tag
-# the commit with it and push the tag.
+# Normally the pre-commit hook runs this for you (tool/version/install_hooks.sh). By hand: git add the
+# printed files; the hooks then add the tag to the message and tag the commit.
 set -euo pipefail
 
 cd "$(git rev-parse --show-toplevel)"
@@ -48,5 +48,5 @@ done
 tag="$(vl_field "$series" 2)$new"
 echo "$series: $cur -> $new"
 echo "git add $pubspecs"
-echo "Commit message must contain: $tag"
-echo "After committing: git tag $tag && git push origin $tag"
+echo "Tag: $tag (the version hooks add it to the commit message and tag the commit)"
+echo "Without the hooks: name $tag in the message, then git tag -a $tag -m $tag and push it."

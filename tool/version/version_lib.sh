@@ -52,3 +52,26 @@ vl_owner() {
 }
 
 VL_DOC_RE='(\.md$|(^|/)docs/)'
+
+# Succeeds while a merge / cherry-pick / revert / rebase is in progress (version hooks stand aside).
+vl_in_sequencer() {
+  local d
+  d=$(git rev-parse --git-dir)
+  for s in MERGE_HEAD CHERRY_PICK_HEAD REVERT_HEAD; do [ -e "$d/$s" ] && return 0; done
+  [ -d "$d/rebase-merge" ] || [ -d "$d/rebase-apply" ]
+}
+
+# Prints the commit a new commit is compared with: HEAD, or HEAD^ for `git commit --amend`
+# (hooks run as children of the git commit process). Prints nothing for the first commit.
+vl_commit_base() {
+  git rev-parse -q --verify HEAD >/dev/null || return 0
+  case " $(ps -o args= -p "$PPID" 2>/dev/null || true) " in
+    *" --amend "*) git rev-parse -q --verify HEAD^ >/dev/null && echo "HEAD^" ;;
+    *) echo "HEAD" ;;
+  esac
+}
+
+# Succeeds when the caller asked to keep every version (explicit human instruction only).
+vl_keep_requested() {
+  [ "${KEEP_VERSION:-}" = "1" ]
+}

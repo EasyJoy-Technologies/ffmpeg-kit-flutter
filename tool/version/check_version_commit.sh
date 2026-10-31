@@ -7,7 +7,8 @@
 #   3. A series whose files changed (docs excepted) must go +1. Changed files outside every
 #      series require at least one series +1.
 #   4. Every bumped series' tag (<tag-prefix><version>) appears in the commit message.
-#   5. [keep-version] in the message: every version must stay unchanged (explicit human instruction only).
+#   5. [keep-version] in the message or KEEP_VERSION=1: every version must stay unchanged (explicit human
+#      instruction only).
 #   6. The first two digits are not checked here (they change only on explicit human instruction).
 #   7. Pass when the base has no tool/version/series.conf (the commit that introduces the scheme).
 # Skipped during merge / cherry-pick / revert / rebase and for the first commit.
@@ -19,24 +20,16 @@ msg_file="$1"
 cd "$(git rev-parse --show-toplevel)"
 . tool/version/version_lib.sh
 
-git_dir=$(git rev-parse --git-dir)
-for state in MERGE_HEAD CHERRY_PICK_HEAD REVERT_HEAD; do
-  [ -e "$git_dir/$state" ] && exit 0
-done
-{ [ -d "$git_dir/rebase-merge" ] || [ -d "$git_dir/rebase-apply" ]; } && exit 0
-git rev-parse -q --verify HEAD >/dev/null || exit 0
-
-base="HEAD"
-case " $(ps -o args= -p "$PPID" 2>/dev/null || true) " in
-  *" --amend "*) git rev-parse -q --verify HEAD^ >/dev/null || exit 0; base="HEAD^" ;;
-esac
+vl_in_sequencer && exit 0
+base=$(vl_commit_base)
+[ -n "$base" ] || exit 0
 git cat-file -e "$base:$VL_CONF" 2>/dev/null || exit 0
 
 fail() {
   {
     echo "✗ Version check failed: $1"
-    echo "  Bump with tool/bump_version.sh [<series>], git add the printed files and put the printed tag in the message."
-    echo "  Keeping every version unchanged needs $MARKER (explicit human instruction only)."
+    echo "  The pre-commit hook bumps automatically (tool/version/install_hooks.sh); by hand: tool/bump_version.sh [<series>]."
+    echo "  Keeping every version unchanged needs KEEP_VERSION=1 git commit (explicit human instruction only)."
   } >&2
   exit 1
 }
@@ -49,6 +42,7 @@ code_files=$(echo "$files" | grep -Ev "$VL_DOC_RE" || true)
 msg=$(grep -v '^#' "$msg_file" || true)
 keep=0
 case "$msg" in *"$MARKER"*) keep=1 ;; esac
+vl_keep_requested && keep=1
 
 bumped_any=0 orphan=0
 touched=""

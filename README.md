@@ -74,9 +74,17 @@ Up to 1.1.0 the binaries were the `sk3llo/ffmpeg_kit_flutter` release `8.1.2-min
 
 ## Versioning
 
-Same scheme as NiceNote: every code change bumps the patch by 1, only via `tool/bump_version.sh`; the first two
-digits change only on explicit human instruction (`--line X.Y`). Doc-only changes (`*.md`, `docs/`) keep the
-version. `.githooks/commit-msg` enforces it (enable once per clone: `git config core.hooksPath .githooks`;
-self-test: `tool/version/test_check_version_commit.sh`); the commit message names the new tag `vX.Y.Z`. Every
-bump adds a `CHANGELOG.md` entry and is tagged and pushed; consumers reference tags only. Up to 1.2.0 releases
-bumped the minor version.
+Same scheme as NiceNote:
+- Every code change bumps the patch by 1 via `tool/bump_version.sh`; the first two digits change only on explicit
+  human instruction (`--line X.Y`). Doc-only changes (`*.md`, `docs/`) keep the version. Up to 1.2.0 releases
+  bumped the minor version.
+- The version hooks do this automatically (enable once per clone: `tool/version/install_hooks.sh`, which sets
+  `core.hooksPath .githooks` and `push.followTags true`):
+  - `pre-commit` bumps the patch of every series whose code is staged and stages the pubspecs (files outside every
+    series bump the first series in `tool/version/series.conf`; an amend is not bumped twice);
+  - `prepare-commit-msg` adds the new tag to the subject line;
+  - `post-commit` creates the annotated tag, and `git push` carries it;
+  - `commit-msg` is the final gate (rejects a missing, skipped or out-of-sync bump).
+  Keep every version unchanged only on explicit human instruction: `KEEP_VERSION=1 git commit`. Self-tests:
+  `tool/version/test_check_version_commit.sh`, `tool/version/test_hooks.sh`.
+- Every bump adds a `CHANGELOG.md` entry; consumers reference tags only.

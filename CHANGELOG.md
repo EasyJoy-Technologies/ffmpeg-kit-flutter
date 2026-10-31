@@ -1,3 +1,9 @@
+## 1.2.1 (EasyJoy self-hosted)
+
+* Version hooks: `pre-commit` bumps the patch automatically, `prepare-commit-msg` adds the tag to the message,
+  `post-commit` tags the commit, `push.followTags` pushes it (`tool/version/install_hooks.sh` once per clone).
+  Tooling only, no package code change: nn_audio may stay on v1.2.0.
+
 ## 1.2.0 (EasyJoy self-hosted)
 
 * **Android: FFmpeg rebuilt with only the components NiceNote uses** (`ffmpeg-build/`). Same FFmpeg 8.1.2 source, configure options, libraries and ffmpeg-kit wrapper as `ffmpeg-kit-min` 2.2.1; the component list keeps all 211 audio decoders, all demuxers except reference/playlist ones, the parsers, aac/alac/flac/pcm encoders and the m4a/wav/aiff/caf/flac/raw-PCM muxers, and drops video/image/subtitle codecs, network protocols and unused filters.

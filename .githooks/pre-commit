@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Bumps the patch of every changed series and stages it. Enable once per clone: tool/version/install_hooks.sh
+exec "$(git rev-parse --show-toplevel)/tool/version/auto_bump.sh"

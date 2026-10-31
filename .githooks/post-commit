@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Tags the commit with every new version (annotated; pushed by push.followTags).
+exec "$(git rev-parse --show-toplevel)/tool/version/tag_commit.sh"
