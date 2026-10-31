@@ -71,3 +71,12 @@ Up to 1.1.0 the binaries were the `sk3llo/ffmpeg_kit_flutter` release `8.1.2-min
 - Plugin code: LGPL v3.0 (see `LICENSE`)
 - Bundled FFmpeg binaries: LGPL v3.0 (audio variant — contains **no** GPL components)
 - Apps using this library must include an FFmpeg/LGPL attribution notice.
+
+## Versioning
+
+Same scheme as NiceNote: every code change bumps the patch by 1, only via `tool/bump_version.sh`; the first two
+digits change only on explicit human instruction (`--line X.Y`). Doc-only changes (`*.md`, `docs/`) keep the
+version. `.githooks/commit-msg` enforces it (enable once per clone: `git config core.hooksPath .githooks`;
+self-test: `tool/version/test_check_version_commit.sh`); the commit message names the new tag `vX.Y.Z`. Every
+bump adds a `CHANGELOG.md` entry and is tagged and pushed; consumers reference tags only. Up to 1.2.0 releases
+bumped the minor version.

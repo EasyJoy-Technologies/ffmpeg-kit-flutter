@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Version gate. Enable once per clone: git config core.hooksPath .githooks
+exec "$(git rev-parse --show-toplevel)/tool/version/check_version_commit.sh" "$1"
